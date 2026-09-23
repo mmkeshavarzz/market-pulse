@@ -1,6 +1,7 @@
 name: Update Prices
 
 on:
+  workflow_dispatch: # این همون دکمه‌ست که خودت می‌زنی
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
