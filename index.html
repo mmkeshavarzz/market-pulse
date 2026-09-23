@@ -334,100 +334,209 @@
        [3] اسکریپت‌های دریافت هوشمند داده، مدیریت کش و ذخیره تصویر
        ========================================================================== -->
   <script>
-    // کلید ذخیره‌سازی داده در مرورگر
-    const STORAGE_KEY = 'market_pulse_cached_data';
+  const STORAGE_KEY = "market_pulse_cached_data";
+  const DATA_URL = "./data/prices.json";
 
-    // بازیابی تم ذخیره‌شده
-    const savedTheme = localStorage.getItem('app_theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
+  const savedTheme = localStorage.getItem("app_theme") || "light";
+  document.documentElement.setAttribute(
+    "data-theme",
+    savedTheme
+  );
 
-    function toggleDashboardTheme() {
-      const current = document.documentElement.getAttribute('data-theme');
-      const target = current === 'light' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', target);
-      localStorage.setItem('app_theme', target);
+  function toggleDashboardTheme() {
+    const currentTheme =
+      document.documentElement.getAttribute("data-theme");
+
+    const targetTheme =
+      currentTheme === "light" ? "dark" : "light";
+
+    document.documentElement.setAttribute(
+      "data-theme",
+      targetTheme
+    );
+
+    localStorage.setItem(
+      "app_theme",
+      targetTheme
+    );
+  }
+
+  function formatRial(value) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number) || number <= 0) {
+      return "---";
     }
 
-    // متد فرمت‌دهی عدد به ریال و فارسی
-    function formatRial(value) {
-      const number = Number(value);
+    return new Intl.NumberFormat("fa-IR").format(number);
+  }
 
-      if (!Number.isFinite(number) || number <= 0) {
-        return "---";
-      }
-      return new Intl.NumberFormat("fa-IR").format(number);
+  function renderPrices(data) {
+    if (!data || typeof data !== "object") {
+      throw new Error("ساختار داده قیمت‌ها معتبر نیست.");
     }
 
-    // اعمال داده‌ها روی عناصر صفحه
-    function renderPrices(data) {
-      // پشتیبانی کامل از هر دو مدل نام‌گذاری کلیدها
-      const gold = data.gold_mg_rial ?? data.goldMgRial;
-      const silver = data.silver_mg_rial ?? data.silverMgRial;
-      const dollar = data.dollar_rial ?? data.dollarRial;
-      const updated = data.updated_at ?? data.lastUpdated ?? 'هم‌اکنون';
+    const gold =
+      data.gold_mg_rial ??
+      data.goldMgRial;
 
-      document.getElementById('gold-val').innerText = formatRial(gold);
-      document.getElementById('silver-val').innerText = formatRial(silver);
-      document.getElementById('dollar-val').innerText = formatRial(dollar);
-      document.getElementById('time-display').innerText = 'بروزرسانی: ' + updated;
+    const silver =
+      data.silver_mg_rial ??
+      data.silverMgRial;
+
+    const dollar =
+      data.dollar_rial ??
+      data.dollarRial;
+
+    const updated =
+      data.updated_at ??
+      data.lastUpdated ??
+      "نامشخص";
+
+    document.getElementById("gold-val").innerText =
+      formatRial(gold);
+
+    document.getElementById("silver-val").innerText =
+      formatRial(silver);
+
+    document.getElementById("dollar-val").innerText =
+      formatRial(dollar);
+
+    document.getElementById("time-display").innerText =
+      "بروزرسانی: " + updated;
+  }
+
+  function renderError(message) {
+    document.getElementById("time-display").innerText =
+      message;
+  }
+
+  async function fetchLivePrices() {
+    const refreshButton =
+      document.querySelector(
+        'button[onclick="fetchLivePrices()"]'
+      );
+
+    if (refreshButton) {
+      refreshButton.disabled = true;
+      refreshButton.style.opacity = "0.6";
     }
 
-    // واکشی داده با استراتژی کش پایدار
-    async function fetchLivePrices() {
-      // ابتدا بررسی کش محلی جهت جلوگیری از انتظار کاربر
-      const cached = localStorage.getItem(STORAGE_KEY);
-      if (cached) {
-        try {
-          renderPrices(JSON.parse(cached));
-        } catch (e) {
-          console.warn('کش قدیمی معتبر نبود');
-        }
-      }
+    const cached =
+      localStorage.getItem(STORAGE_KEY);
 
+    // ابتدا کش قبلی برای نمایش فوری نشان داده می‌شود.
+    if (cached) {
       try {
-        const response = await fetch('./data/prices.json?' + Date.now());
-        if (!response.ok) throw new Error('عدم دریافت فایل');
-        
-        const freshData = await response.json();
-        renderPrices(freshData);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(freshData));
-      } catch (err) {
-        console.error('خطا در ارتباط با داده‌های زنده:', err);
-        if (!cached) {
-          document.getElementById('time-display').innerText = 'خطا در ارتباط با پایگاه داده';
-        }
+        renderPrices(JSON.parse(cached));
+      } catch (error) {
+        console.warn(
+          "کش قبلی معتبر نیست:",
+          error
+        );
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
 
-    // ایجاد خروجی عکس PNG با کیفیت عالی
-    async function exportToPNG() {
-      const exportBox = document.getElementById('capture-area');
-      const watermark = document.getElementById('watermark-export');
-      
-      // نمایش موقت اطلاعات سوشال در عکس
-      watermark.style.display = 'block';
+    try {
+      const response = await fetch(
+        `${DATA_URL}?t=${Date.now()}`,
+        {
+          method: "GET",
+          cache: "no-store",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
 
-      try {
-        const canvas = await html2canvas(exportBox, {
-          scale: 2, // وضوح دوبرابر Retina
+      if (!response.ok) {
+        throw new Error(
+          `HTTP ${response.status}`
+        );
+      }
+
+      const freshData =
+        await response.json();
+
+      renderPrices(freshData);
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(freshData)
+      );
+    } catch (error) {
+      console.error(
+        "خطا در دریافت قیمت‌های جدید:",
+        error
+      );
+
+      if (!cached) {
+        renderError(
+          "خطا در دریافت آخرین قیمت‌ها"
+        );
+      } else {
+        renderError(
+          "نمایش آخرین داده ذخیره‌شده"
+        );
+      }
+    } finally {
+      if (refreshButton) {
+        refreshButton.disabled = false;
+        refreshButton.style.opacity = "1";
+      }
+    }
+  }
+
+  async function exportToPNG() {
+    const exportBox =
+      document.getElementById("capture-area");
+
+    const watermark =
+      document.getElementById("watermark-export");
+
+    watermark.style.display = "block";
+
+    try {
+      const canvas = await html2canvas(
+        exportBox,
+        {
+          scale: 2,
           useCORS: true,
-          backgroundColor: null
-        });
+          backgroundColor: null,
+        }
+      );
 
-        const imageURL = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = 'market-pulse-rates.png';
-        link.href = imageURL;
-        link.click();
-      } catch (e) {
-        alert('خطا در ایجاد خروجی عکس');
-      } finally {
-        watermark.style.display = 'none';
-      }
+      const imageURL =
+        canvas.toDataURL("image/png");
+
+      const link =
+        document.createElement("a");
+
+      link.download =
+        "market-pulse-rates.png";
+
+      link.href = imageURL;
+      link.click();
+    } catch (error) {
+      console.error(
+        "خطا در تولید خروجی PNG:",
+        error
+      );
+
+      alert(
+        "خطا در ایجاد خروجی عکس"
+      );
+    } finally {
+      watermark.style.display = "none";
     }
+  }
 
-    // بارگذاری اولیه بلافاصله پس از باز شدن
-    document.addEventListener('DOMContentLoaded', fetchLivePrices);
-  </script>
+  document.addEventListener(
+    "DOMContentLoaded",
+    fetchLivePrices
+  );
+</script>
+
 </body>
 </html>
