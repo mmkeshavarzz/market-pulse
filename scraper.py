@@ -51,7 +51,7 @@ def get_digikala_data():
         return None, None
 
 def get_dollar_data():
-    url = "https://isignal.ir/gold-currency/usdollar/"
+    url = "https://isignal.ir/goldال درخواست به سy/usdollar/"
     try:
         logging.info("در حال ارسال درخواست به سیگنال... 📈")
         response = requests.get(url, headers=HEADERS, timeout=15)
@@ -88,21 +88,26 @@ def main():
     gold, silver = get_digikala_data()
     dollar = get_dollar_data()
 
-    # بررسی اینکه آیا واقعاً قیمت جدیدی گرفتیم یا نه؟
-    has_new_data = bool(gold or silver or dollar)
     current_time_tehran = datetime.now(TEHRAN_TZ).isoformat()
 
-    # اگر دیتا نگرفتیم، تاریخ قبلی رو نگه می‌داریم تا توی سایت لو نریم! 😉
+    # ساختار جدید: هر ارز زمان آخرین موفقیت خودش را دارد
+    # اگر قیمت جدید نگرفتیم، مقدار و زمان قبلی حفظ می‌شود
     new_data = {
-        "gold_mg_rial": gold if gold else old_data.get("gold_mg_rial"),
-        "silver_mg_rial": silver if silver else old_data.get("silver_mg_rial"),
-        "dollar_rial": dollar if dollar else old_data.get("dollar_rial"),
-        "updated_at": current_time_tehran if has_new_data else old_data.get("updated_at", current_time_tehran)
+        "gold_mg_rial":        gold   if gold   else old_data.get("gold_mg_rial"),
+        "silver_mg_rial":      silver if silver else old_data.get("silver_mg_rial"),
+        "dollar_rial":         dollar if dollar else old_data.get("dollar_rial"),
+        # زمان آخرین fetch موفق برای هر ارز به صورت جداگانه
+        "gold_last_success":   current_time_tehran if gold   else old_data.get("gold_last_success"),
+        "silver_last_success": current_time_tehran if silver else old_data.get("silver_last_success"),
+        "dollar_last_success": current_time_tehran if dollar else old_data.get("dollar_last_success"),
+        # زمان آخرین اجرای اسکریپت (چه موفق چه ناموفق)
+        "last_run_at": current_time_tehran
     }
 
     with open(json_path, 'w', encoding='utf-8') as f:
         json.dump(new_data, f, ensure_ascii=False, indent=4)
-        
+
+    has_new_data = bool(gold or silver or dollar)
     logging.info(f"فایل prices.json به‌روزرسانی شد. (دیتا جدید بود؟ {has_new_data})")
 
 if __name__ == "__main__":
