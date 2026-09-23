@@ -2,5 +2,8 @@
     "gold_mg_rial": 237784,
     "silver_mg_rial": 4820,
     "dollar_rial": 2314600,
-    "updated_at": "2026-09-23T22:17:13.438732"
+    "gold_last_success": null,
+    "silver_last_success": null,
+    "dollar_last_success": null,
+    "last_run_at": "2026-09-24T02:20:55.024808+03:30"
 }
