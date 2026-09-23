@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: update-market-prices
+  cancel-in-progress: true
+
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
@@ -15,6 +19,8 @@ jobs:
     steps:
       - name: دریافت کدها
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: نصب پایتون
         uses: actions/setup-python@v5
@@ -28,6 +34,9 @@ jobs:
 
       - name: اجرای اسکریپر
         run: python scraper.py
+
+      - name: نمایش فایل قیمت‌ها
+        run: cat data/prices.json
 
       - name: نمایش تغییرات قیمت
         run: git diff -- data/prices.json
