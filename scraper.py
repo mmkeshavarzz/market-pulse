@@ -16,15 +16,17 @@ ISIGNAL_URL = "https://isignal.ir/gold-currency/usdollar/"
 REQUEST_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36"
+        "AppleWebKit/537.36 "
+        "(KHTML, like Gecko) "
+        "Chrome/126.0.0.0 Safari/537.36"
     ),
+    "Accept-Language": "fa-IR,fa;q=0.9,en;q=0.8",
     "Accept": (
         "text/html,application/xhtml+xml,application/xml;"
         "q=0.9,image/avif,image/webp,*/*;q=0.8"
     ),
-    "Accept-Language": "fa-IR,fa;q=0.9,en;q=0.8",
 }
+
 
 # مقدار اولیه بر اساس رایج‌ترین حالت داده دیجی‌کالا:
 # اگر price داخل payload به تومان بود، در ۱۰ ضرب می‌شود.
@@ -128,7 +130,7 @@ def fetch_digikala_prices() -> tuple[Optional[int], Optional[int]]:
     خروجی هر دو قیمت به ریال و برای یک میلی‌گرم است.
     """
     try:
-        response = requests.get(
+        response = requests.get(URL)
             DIGIKALA_URL,
             headers=REQUEST_HEADERS,
             timeout=20,
@@ -183,7 +185,7 @@ def fetch_isignal_dollar() -> Optional[int]:
     قبل از کلمه ریال یا تومان قرار گرفته باشد.
     """
     try:
-        response = requests.get(
+        response = requests.get(URL)
             ISIGNAL_URL,
             headers=REQUEST_HEADERS,
             timeout=20,
@@ -267,6 +269,22 @@ def main() -> None:
 
     gold_rial, silver_rial = fetch_digikala_prices()
     dollar_rial = fetch_isignal_dollar()
+
+    if gold_rial is None:
+        raise RuntimeError(
+            "قیمت طلا از دیجی‌کالا دریافت نشد."
+        )
+    
+    if silver_rial is None:
+        raise RuntimeError(
+            "قیمت نقره از دیجی‌کالا دریافت نشد."
+        )
+    
+    if dollar_rial is None:
+        raise RuntimeError(
+            "قیمت دلار از سیگنال دریافت نشد."
+        )
+
 
     has_successful_update = any(
         price is not None
