@@ -22,18 +22,42 @@
   </div>
 
   <script>
-    async function updateData() {
-      try {
-        const res = await fetch('./data/prices.json?t=' + Date.now());
-        const data = await res.json();
-        document.getElementById('gold').innerText = data.goldMgRial.toLocaleString('fa-IR') + ' ریال';
-        document.getElementById('silver').innerText = data.silverMgRial.toLocaleString('fa-IR') + ' ریال';
-        document.getElementById('dollar').innerText = data.dollarRial.toLocaleString('fa-IR') + ' ریال';
-        document.getElementById('time').innerText = 'آخرین آپدیت: ' + new Date(data.lastUpdated).toLocaleTimeString('fa-IR');
-      } catch (e) {
-        console.error("خطا در بارگذاری قیمت‌ها");
-      }
-    }
+            async function fetchPrices() {
+            try {
+                // این بار با پسوند .json صداش می‌زنیم تا پیداش کنه
+                const response = await fetch('./data/prices.json?t=' + Date.now()); 
+                if (!response.ok) throw new Error("مشکل در دریافت فایل JSON");
+                const data = await response.json();
+
+                // حالا اسم کلیدها رو دقیقاً همونطوری که پایتون میسازه گذاشتیم
+                document.getElementById('gold-price').innerText = `${data.gold_mg_rial.toLocaleString('fa-IR')} ریال`;
+                document.getElementById('silver-price').innerText = `${data.silver_mg_rial.toLocaleString('fa-IR')} ریال`;
+                document.getElementById('dollar-price').innerText = `${data.dollar_rial.toLocaleString('fa-IR')} ریال`;
+                
+                // اگه جایی داری که ساعت رو نشون میده اینم اصلاح کن:
+                const timeEl = document.getElementById('last-updated');
+                if(timeEl && data.updated_at) timeEl.innerText = `آخرین آپدیت: ${data.updated_at}`;
+
+                // ذخیره در لوکال استوریج برای لود سریع‌تر دفعات بعد
+                localStorage.setItem('cachedPrices', JSON.stringify(data));
+                
+            } catch (error) {
+                console.error('خطا در دریافت قیمت‌ها:', error);
+                // اگر خطا داد، چک می‌کنیم قبلاً چیزی ذخیره کرده بودیم یا نه
+                const cached = localStorage.getItem('cachedPrices');
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    document.getElementById('gold-price').innerText = `${data.gold_mg_rial.toLocaleString('fa-IR')} ریال`;
+                    document.getElementById('silver-price').innerText = `${data.silver_mg_rial.toLocaleString('fa-IR')} ریال`;
+                    document.getElementById('dollar-price').innerText = `${data.dollar_rial.toLocaleString('fa-IR')} ریال`;
+                } else {
+                    document.getElementById('gold-price').innerText = "خطا در دریافت اطلاعات";
+                    document.getElementById('silver-price').innerText = "خطا در دریافت اطلاعات";
+                    document.getElementById('dollar-price').innerText = "خطا در دریافت اطلاعات";
+                }
+            }
+        }
+
     updateData();
   </script>
 </body>
