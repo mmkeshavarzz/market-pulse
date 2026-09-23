@@ -1,8 +1,9 @@
 import json
 import os
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from typing import Any, Optional
+from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup
@@ -25,17 +26,15 @@ REQUEST_HEADERS = {
         "text/html,application/xhtml+xml,application/xml;"
         "q=0.9,image/avif,image/webp,*/*;q=0.8"
     ),
+    "Referer": "https://www.google.com/",
 }
 
-
-# مقدار اولیه بر اساس رایج‌ترین حالت داده دیجی‌کالا:
-# اگر price داخل payload به تومان بود، در ۱۰ ضرب می‌شود.
-# این مقدار را پس از مقایسه با عدد واقعی صفحه می‌توان تغییر داد.
+# اگر قیمت موجود در payload دیجی‌کالا تومان باشد، به ریال تبدیل می‌شود.
 DIGIKALA_PRICE_UNIT = "toman"
 
 
 def normalize_digits(value: str) -> str:
-    """تبدیل اعداد فارسی و عربی به اعداد انگلیسی."""
+    """تبدیل اعداد فارسی و عربی به انگلیسی."""
     translation_table = str.maketrans(
         "۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩",
         "01234567890123456789",
@@ -44,12 +43,7 @@ def normalize_digits(value: str) -> str:
 
 
 def parse_number(value: Any) -> Optional[int]:
-    """
-    استخراج عدد از مقدار متنی یا عددی.
-
-    نمونه:
-    '۲,۳۱۴,۶۰۰ ریال' -> 2314600
-    """
+    """استخراج عدد صحیح از متن یا مقدار عددی."""
     if value is None or isinstance(value, bool):
         return None
 
@@ -69,8 +63,10 @@ def parse_number(value: Any) -> Optional[int]:
 
 
 def convert_to_rial(value: int, unit: str) -> int:
-    """تبدیل قیمت تومان به ریال."""
-    if unit.strip().lower() in {"toman", "تومان"}:
+    """تبدیل تومان به ریال."""
+    normalized_unit = normalize_digits(unit).strip().lower()
+
+    if normalized_unit in {"toman", "تومان"}:
         return value * 10
 
     return value
@@ -81,10 +77,8 @@ def find_asset_price(
     title_pattern: str,
 ) -> Optional[int]:
     """
-    جست‌وجوی بازگشتی قیمت در ساختار JSON دیجی‌کالا.
-
-    این تابع به ترتیب قرار گرفتن title و price
-    در JSON وابسته نیست.
+    جست‌وجوی بازگشتی قیمت بر اساس عنوان دارایی.
+    ترتیب title و price در JSON مهم نیست.
     """
     if isinstance(node, dict):
         title = str(
@@ -104,7 +98,7 @@ def find_asset_price(
             ):
                 price = parse_number(node.get(price_key))
 
-                if price is not None:
+                if price is not None and price > 0:
                     return price
 
         for child in node.values():
@@ -126,14 +120,13 @@ def find_asset_price(
 def fetch_digikala_prices() -> tuple[Optional[int], Optional[int]]:
     """
     دریافت قیمت طلای ۱۸ عیار و نقره ۹۹۹.
-
-    خروجی هر دو قیمت به ریال و برای یک میلی‌گرم است.
+    خروجی برحسب ریال است.
     """
     try:
-        response = requests.get(URL)
+        response = requests.get(
             DIGIKALA_URL,
             headers=REQUEST_HEADERS,
-            timeout=20,
+            timeout=30,
         )
         response.raise_for_status()
 
@@ -142,7 +135,8 @@ def fetch_digikala_prices() -> tuple[Optional[int], Optional[int]]:
 
         if next_data is None:
             raise RuntimeError(
-                "داده __NEXT_DATA__ در صفحه دیجی‌کالا پیدا نشد."
+                "داده __NEXT_DATA__ در صفحه دیجی‌کالا پیدا نشد. "
+                "احتمالاً ساختار صفحه تغییر کرده یا دسترسی مسدود شده است."
             )
 
         raw_json = next_data.string or next_data.get_text()
@@ -170,6 +164,12 @@ def fetch_digikala_prices() -> tuple[Optional[int], Optional[int]]:
             else None
         )
 
+        if gold_rial is None:
+            print("هشدار: قیمت طلای ۱۸ عیار پیدا نشد.")
+
+        if silver_rial is None:
+            print("هشدار: قیمت نقره ۹۹۹ پیدا نشد.")
+
         return gold_rial, silver_rial
 
     except Exception as error:
@@ -179,24 +179,25 @@ def fetch_digikala_prices() -> tuple[Optional[int], Optional[int]]:
 
 def fetch_isignal_dollar() -> Optional[int]:
     """
-    استخراج قیمت اصلی دلار از صفحه سیگنال.
-
-    فقط عددی پذیرفته می‌شود که بلافاصله
-    قبل از کلمه ریال یا تومان قرار گرفته باشد.
+    استخراج قیمت دلار از صفحه سیگنال.
+    خروجی برحسب ریال است.
     """
     try:
-        response = requests.get(URL)
+        response = requests.get(
             ISIGNAL_URL,
             headers=REQUEST_HEADERS,
-            timeout=20,
+            timeout=30,
         )
         response.raise_for_status()
 
-        html = normalize_digits(response.text)
+        soup = BeautifulSoup(response.text, "html.parser")
+        text = normalize_digits(
+            soup.get_text(" ", strip=True)
+        )
 
         matches = re.findall(
-            r"([\d,]+)\s*(ریال|تومان)",
-            html,
+            r"([\d,٬،]+)\s*(ریال|تومان)",
+            text,
             flags=re.IGNORECASE,
         )
 
@@ -219,7 +220,7 @@ def fetch_isignal_dollar() -> Optional[int]:
                 "هیچ قیمت معتبر دلاری در صفحه سیگنال پیدا نشد."
             )
 
-        # نخستین قیمت دارای واحد، قیمت اصلی صفحه است.
+        # نخستین مقدار دارای واحد پولی
         return candidates[0]
 
     except Exception as error:
@@ -229,15 +230,13 @@ def fetch_isignal_dollar() -> Optional[int]:
 
 def tehran_now() -> str:
     """تولید زمان فعلی به وقت تهران."""
-    tehran_timezone = timezone(timedelta(hours=3, minutes=30))
-
-    return datetime.now(tehran_timezone).strftime(
-        "%Y-%m-%d %H:%M:%S"
-    )
+    return datetime.now(
+        ZoneInfo("Asia/Tehran")
+    ).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def read_previous_data() -> dict[str, Any]:
-    """خواندن داده قبلی برای جلوگیری از ثبت صفر در خطای موقت."""
+    """خواندن داده قبلی برای جلوگیری از حذف ناگهانی فایل."""
     default_data = {
         "gold_mg_rial": 0,
         "silver_mg_rial": 0,
@@ -263,58 +262,38 @@ def read_previous_data() -> dict[str, Any]:
 
 
 def main() -> None:
-    previous_data = read_previous_data()
-
     print("Fetching prices...")
 
     gold_rial, silver_rial = fetch_digikala_prices()
     dollar_rial = fetch_isignal_dollar()
 
+    # اگر هر منبعی شکست خورد، Workflow باید شکست بخورد.
+    # این کار جلوی تازه نمایش داده شدن قیمت قدیمی را می‌گیرد.
+    errors = []
+
     if gold_rial is None:
-        raise RuntimeError(
-            "قیمت طلا از دیجی‌کالا دریافت نشد."
-        )
-    
+        errors.append("قیمت طلا دریافت نشد.")
+
     if silver_rial is None:
-        raise RuntimeError(
-            "قیمت نقره از دیجی‌کالا دریافت نشد."
-        )
-    
+        errors.append("قیمت نقره دریافت نشد.")
+
     if dollar_rial is None:
-        raise RuntimeError(
-            "قیمت دلار از سیگنال دریافت نشد."
-        )
+        errors.append("قیمت دلار دریافت نشد.")
 
-
-    has_successful_update = any(
-        price is not None
-        for price in (gold_rial, silver_rial, dollar_rial)
-    )
+    if errors:
+        raise RuntimeError(" | ".join(errors))
 
     new_data = {
-        "gold_mg_rial": (
-            gold_rial
-            if gold_rial is not None
-            else previous_data["gold_mg_rial"]
-        ),
-        "silver_mg_rial": (
-            silver_rial
-            if silver_rial is not None
-            else previous_data["silver_mg_rial"]
-        ),
-        "dollar_rial": (
-            dollar_rial
-            if dollar_rial is not None
-            else previous_data["dollar_rial"]
-        ),
-        "updated_at": (
-            tehran_now()
-            if has_successful_update
-            else previous_data["updated_at"]
-        ),
+        "gold_mg_rial": gold_rial,
+        "silver_mg_rial": silver_rial,
+        "dollar_rial": dollar_rial,
+        "updated_at": tehran_now(),
     }
 
-    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
+    os.makedirs(
+        os.path.dirname(DATA_FILE),
+        exist_ok=True,
+    )
 
     with open(DATA_FILE, "w", encoding="utf-8") as file:
         json.dump(
