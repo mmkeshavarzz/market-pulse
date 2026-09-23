@@ -1,0 +1,35 @@
+name: Update Prices
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: دریافت کدها
+        uses: actions/checkout@v4
+
+      - name: نصب پایتون
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: نصب کتابخانه‌ها
+        run: pip install requests beautifulsoup4
+
+      - name: اجرای استخراج نرخ‌ها
+        run: python scraper.py
+
+      - name: ذخیره نتایج
+        run: |
+          git config --global user.name "MarketBot"
+          git config --global user.email "bot@market.local"
+          git add data/prices.json
+          git commit -m "بروزرسانی نرخ‌ها [skip ci]" || exit 0
+          git push
