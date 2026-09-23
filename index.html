@@ -381,7 +381,7 @@
       }
 
       try {
-        const response = await fetch('./data/prices.json?v=${new Date().getTime()}' + Date.now());
+        const response = await fetch('./data/prices.json?' + Date.now());
         if (!response.ok) throw new Error('عدم دریافت فایل');
         
         const freshData = await response.json();
