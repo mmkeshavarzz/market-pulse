@@ -8,8 +8,9 @@ on:
 permissions:
   contents: write
 
+# این بخش رو اضافه کردم تا از تداخل دوتا آپدیت همزمان جلوگیری بشه 🚦
 concurrency:
-  group: update-market-prices
+  group: update-prices
   cancel-in-progress: true
 
 jobs:
@@ -19,8 +20,6 @@ jobs:
     steps:
       - name: دریافت کدها
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: نصب پایتون
         uses: actions/setup-python@v5
@@ -34,9 +33,6 @@ jobs:
 
       - name: اجرای اسکریپر
         run: python scraper.py
-
-      - name: نمایش فایل قیمت‌ها
-        run: cat data/prices.json
 
       - name: نمایش تغییرات قیمت
         run: git diff -- data/prices.json
