@@ -1,9 +1,9 @@
 {
-    "gold_mg_rial": 237784,
-    "silver_mg_rial": 4820,
-    "dollar_rial": 2314600,
-    "gold_last_success": null,
-    "silver_last_success": null,
-    "dollar_last_success": null,
-    "last_run_at": "2026-09-24T02:29:31.993975+03:30"
+  "gold": 237659000,
+  "silver": 5047,
+  "usd": 2317050,
+  "gold_last_success": "2026-09-24T02:35:33.837204+03:30",
+  "silver_last_success": "2026-09-24T02:35:33.837204+03:30",
+  "usd_last_success": "2026-09-24T02:35:33.837204+03:30",
+  "last_run_at": "2026-09-24T02:35:33.837204+03:30"
 }
