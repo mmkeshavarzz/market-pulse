@@ -275,7 +275,7 @@
         </div>
         <div>
           <div class="card-value" id="gold-val">---</div>
-          <span class="card-unit">قیمت هر میلی‌گرم (ریال)</span>
+          <span class="card-unit">قیمت هر ۱ میلی‌گرم</span>
         </div>
       </section>
 
@@ -303,7 +303,7 @@
         </div>
         <div>
           <div class="card-value" id="dollar-val">---</div>
-          <span class="card-unit">نرخ اسکناس (ریال)</span>
+          <span class="card-unit">قیمت هر دلار به ریال</span>
         </div>
       </section>
     </main>
@@ -350,8 +350,12 @@
 
     // متد فرمت‌دهی عدد به ریال و فارسی
     function formatRial(val) {
-      if (val === undefined || val === null || isNaN(val)) return '---';
-      return Number(val).toLocaleString('fa-IR') + ' ریال';
+      const number = Number(value);
+
+      if (!Number.isFinite(number) || number <= 0) {
+        return "نامشخص";
+      }
+      return new Intl.NumberFormat("fa-IR").format(number);
     }
 
     // اعمال داده‌ها روی عناصر صفحه
