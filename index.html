@@ -1,64 +1,429 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <title>رصد لحظه‌ای قیمت‌ها</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="description" content="داشبورد رصد لحظه‌ای نرخ طلا، نقره و دلار">
+  <title>نبض بازار | رصد لحظه‌ای نرخ‌ها</title>
+  
+  <!-- کتابخانه تولید تصویر PNG بدون کاهش کیفیت -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <style>
-    body { font-family: Tahoma, sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .card { background: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 320px; text-align: center; }
-    .item { margin: 18px 0; padding: 12px; background: #334155; border-radius: 10px; }
-    .val { font-size: 20px; font-weight: bold; color: #38bdf8; display: block; margin-top: 5px; }
-    .time { font-size: 11px; color: #94a3b8; margin-top: 15px; }
+    /* ==========================================================================
+       [1] متغیرهای طراحی (Design Tokens) - تم روشن صدفی و تم تاریک دیپ‌بلو
+       ========================================================================== */
+    :root {
+      --bg-gradient: radial-gradient(circle at 10% 10%, #fdfbfb 0%, #ebedee 100%);
+      --surface-glass: rgba(255, 255, 255, 0.65);
+      --surface-border: rgba(255, 255, 255, 0.85);
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --gold-accent: #f59e0b;
+      --gold-bg: rgba(245, 158, 11, 0.12);
+      --silver-accent: #64748b;
+      --silver-bg: rgba(100, 116, 139, 0.12);
+      --dollar-accent: #10b981;
+      --dollar-bg: rgba(16, 185, 129, 0.12);
+      --neu-shadow: 8px 8px 18px rgba(166, 180, 200, 0.4), -8px -8px 18px rgba(255, 255, 255, 0.9);
+      --neu-pressed: inset 4px 4px 8px rgba(166, 180, 200, 0.4), inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+      --card-blur: blur(20px);
+    }
+
+    [data-theme="dark"] {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #0c1527 0%, #050811 100%);
+      --surface-glass: rgba(15, 23, 42, 0.7);
+      --surface-border: rgba(56, 189, 248, 0.15);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --gold-accent: #fbbf24;
+      --gold-bg: rgba(251, 191, 36, 0.15);
+      --silver-accent: #cbd5e1;
+      --silver-bg: rgba(203, 213, 225, 0.15);
+      --dollar-accent: #34d399;
+      --dollar-bg: rgba(52, 211, 153, 0.15);
+      --neu-shadow: 6px 6px 16px rgba(0, 0, 0, 0.6), -4px -4px 12px rgba(30, 41, 59, 0.5);
+      --neu-pressed: inset 4px 4px 8px rgba(0, 0, 0, 0.7), inset -4px -4px 8px rgba(30, 41, 59, 0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif; }
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+
+    /* ==========================================================================
+       [2] ساختار بنتو گرید (Bento Grid) و گلس‌مورفیسم
+       ========================================================================== */
+    .dashboard-container {
+      width: 100%;
+      max-width: 900px;
+      background: var(--surface-glass);
+      backdrop-filter: var(--card-blur);
+      -webkit-backdrop-filter: var(--card-blur);
+      border: 1px solid var(--surface-border);
+      border-radius: 28px;
+      box-shadow: var(--neu-shadow);
+      padding: 28px;
+      position: relative;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .title-group h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .title-group p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .action-tools {
+      display: flex;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: none;
+      background: var(--surface-glass);
+      box-shadow: var(--neu-shadow);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+    .icon-btn:active {
+      box-shadow: var(--neu-pressed);
+      transform: scale(0.96);
+    }
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
+
+    /* بنتو کارت‌ها */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .bento-card {
+      background: var(--surface-glass);
+      border: 1px solid var(--surface-border);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--neu-shadow);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    .bento-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gold-theme .card-icon { background: var(--gold-bg); color: var(--gold-accent); }
+    .silver-theme .card-icon { background: var(--silver-bg); color: var(--silver-accent); }
+    .dollar-theme .card-icon { background: var(--dollar-bg); color: var(--dollar-accent); }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .card-value {
+      font-size: 1.45rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+    .gold-theme .card-value { color: var(--gold-accent); }
+    .silver-theme .card-value { color: var(--silver-accent); }
+    .dollar-theme .card-value { color: var(--dollar-accent); }
+
+    .card-unit {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* نوار شبکه‌های اجتماعی پایین */
+    .social-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding-top: 18px;
+      border-top: 1px solid var(--surface-border);
+    }
+    .social-link {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--surface-glass);
+      box-shadow: var(--neu-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .social-link:hover {
+      color: var(--text-main);
+      transform: translateY(-2px);
+    }
+    .social-link svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* کادر واترمارک ویژه خروجی تصویر */
+    .watermark-banner {
+      display: none;
+      margin-top: 16px;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      direction: ltr;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.05);
+    }
+
+    @media (max-width: 768px) {
+      .bento-grid {
+        grid-template-columns: 1fr;
+      }
+      .dashboard-container {
+        padding: 20px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>📊 نرخ‌های زنده</h2>
-    <div class="item">قیمت هر میلی‌گرم طلا: <span id="gold" class="val">در حال بارگذاری...</span></div>
-    <div class="item">قیمت هر میلی‌گرم نقره: <span id="silver" class="val">در حال بارگذاری...</span></div>
-    <div class="item">نرخ دلار (ریال): <span id="dollar" class="val">در حال بارگذاری...</span></div>
-    <div class="time" id="time"></div>
+  <div class="dashboard-container" id="capture-area">
+    <!-- هدر ابزارها و عنوان -->
+    <header class="header-bar">
+      <div class="title-group">
+        <h1>📊 رصد لحظه‌ای دارایی‌ها</h1>
+        <p id="time-display">در حال همگام‌سازی اطلاعات...</p>
+      </div>
+      <div class="action-tools">
+        <!-- دکمه ریفرش زنده -->
+        <button class="icon-btn" onclick="fetchLivePrices()" title="بروزرسانی زنده">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
+        <!-- دکمه تغییر تم -->
+        <button class="icon-btn" onclick="toggleDashboardTheme()" title="تغییر تم">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+        <!-- دکمه ذخیره تصویر PNG -->
+        <button class="icon-btn" onclick="exportToPNG()" title="دریافت عکس PNG">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ساختار شبکه بنتو -->
+    <main class="bento-grid">
+      <!-- کارت طلا -->
+      <section class="bento-card gold-theme">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <span class="card-title">طلای ۱۸ عیار</span>
+        </div>
+        <div>
+          <div class="card-value" id="gold-val">---</div>
+          <span class="card-unit">قیمت هر میلی‌گرم (ریال)</span>
+        </div>
+      </section>
+
+      <!-- کارت نقره -->
+      <section class="bento-card silver-theme">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          </div>
+          <span class="card-title">نقره ۹۹۹</span>
+        </div>
+        <div>
+          <div class="card-value" id="silver-val">---</div>
+          <span class="card-unit">قیمت هر میلی‌گرم (ریال)</span>
+        </div>
+      </section>
+
+      <!-- کارت دلار -->
+      <section class="bento-card dollar-theme">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+          <span class="card-title">دلار آمریکا</span>
+        </div>
+        <div>
+          <div class="card-value" id="dollar-val">---</div>
+          <span class="card-unit">نرخ اسکناس (ریال)</span>
+        </div>
+      </section>
+    </main>
+
+    <!-- نوار شبکه‌های اجتماعی -->
+    <footer class="social-bar">
+      <!-- Instagram -->
+      <a href="https://instagram.com/mm.keshavarzz" target="_blank" rel="noopener noreferrer" class="social-link" title="Instagram">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+      </a>
+      <!-- Telegram -->
+      <a href="https://t.me/ke_mim_mim" target="_blank" rel="noopener noreferrer" class="social-link" title="Telegram">
+        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+      </a>
+      <!-- X (Twitter) -->
+      <a href="https://x.com/s_keshavarz" target="_blank" rel="noopener noreferrer" class="social-link" title="X">
+        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
+    </footer>
+
+    <!-- بخش واترمارک متنی مخصوص خروجی عکس -->
+    <div id="watermark-export" class="watermark-banner">
+      IG: @mm.keshavarzz | TG: @ke_mim_mim | X: @s_keshavarz
+    </div>
   </div>
 
+  <!-- ==========================================================================
+       [3] اسکریپت‌های دریافت هوشمند داده، مدیریت کش و ذخیره تصویر
+       ========================================================================== -->
   <script>
-            async function fetchPrices() {
-            try {
-                // این بار با پسوند .json صداش می‌زنیم تا پیداش کنه
-                const response = await fetch('./data/prices.json?t=' + Date.now()); 
-                if (!response.ok) throw new Error("مشکل در دریافت فایل JSON");
-                const data = await response.json();
+    // کلید ذخیره‌سازی داده در مرورگر
+    const STORAGE_KEY = 'market_pulse_cached_data';
 
-                // حالا اسم کلیدها رو دقیقاً همونطوری که پایتون میسازه گذاشتیم
-                document.getElementById('gold-price').innerText = `${data.gold_mg_rial.toLocaleString('fa-IR')} ریال`;
-                document.getElementById('silver-price').innerText = `${data.silver_mg_rial.toLocaleString('fa-IR')} ریال`;
-                document.getElementById('dollar-price').innerText = `${data.dollar_rial.toLocaleString('fa-IR')} ریال`;
-                
-                // اگه جایی داری که ساعت رو نشون میده اینم اصلاح کن:
-                const timeEl = document.getElementById('last-updated');
-                if(timeEl && data.updated_at) timeEl.innerText = `آخرین آپدیت: ${data.updated_at}`;
+    // بازیابی تم ذخیره‌شده
+    const savedTheme = localStorage.getItem('app_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
 
-                // ذخیره در لوکال استوریج برای لود سریع‌تر دفعات بعد
-                localStorage.setItem('cachedPrices', JSON.stringify(data));
-                
-            } catch (error) {
-                console.error('خطا در دریافت قیمت‌ها:', error);
-                // اگر خطا داد، چک می‌کنیم قبلاً چیزی ذخیره کرده بودیم یا نه
-                const cached = localStorage.getItem('cachedPrices');
-                if (cached) {
-                    const data = JSON.parse(cached);
-                    document.getElementById('gold-price').innerText = `${data.gold_mg_rial.toLocaleString('fa-IR')} ریال`;
-                    document.getElementById('silver-price').innerText = `${data.silver_mg_rial.toLocaleString('fa-IR')} ریال`;
-                    document.getElementById('dollar-price').innerText = `${data.dollar_rial.toLocaleString('fa-IR')} ریال`;
-                } else {
-                    document.getElementById('gold-price').innerText = "خطا در دریافت اطلاعات";
-                    document.getElementById('silver-price').innerText = "خطا در دریافت اطلاعات";
-                    document.getElementById('dollar-price').innerText = "خطا در دریافت اطلاعات";
-                }
-            }
+    function toggleDashboardTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const target = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', target);
+      localStorage.setItem('app_theme', target);
+    }
+
+    // متد فرمت‌دهی عدد به ریال و فارسی
+    function formatRial(val) {
+      if (val === undefined || val === null || isNaN(val)) return '---';
+      return Number(val).toLocaleString('fa-IR') + ' ریال';
+    }
+
+    // اعمال داده‌ها روی عناصر صفحه
+    function renderPrices(data) {
+      // پشتیبانی کامل از هر دو مدل نام‌گذاری کلیدها
+      const gold = data.gold_mg_rial ?? data.goldMgRial;
+      const silver = data.silver_mg_rial ?? data.silverMgRial;
+      const dollar = data.dollar_rial ?? data.dollarRial;
+      const updated = data.updated_at ?? data.lastUpdated ?? 'هم‌اکنون';
+
+      document.getElementById('gold-val').innerText = formatRial(gold);
+      document.getElementById('silver-val').innerText = formatRial(silver);
+      document.getElementById('dollar-val').innerText = formatRial(dollar);
+      document.getElementById('time-display').innerText = 'بروزرسانی: ' + updated;
+    }
+
+    // واکشی داده با استراتژی کش پایدار
+    async function fetchLivePrices() {
+      // ابتدا بررسی کش محلی جهت جلوگیری از انتظار کاربر
+      const cached = localStorage.getItem(STORAGE_KEY);
+      if (cached) {
+        try {
+          renderPrices(JSON.parse(cached));
+        } catch (e) {
+          console.warn('کش قدیمی معتبر نبود');
         }
+      }
 
-    updateData();
+      try {
+        const response = await fetch('./data/prices.json?nocache=' + Date.now());
+        if (!response.ok) throw new Error('عدم دریافت فایل');
+        
+        const freshData = await response.json();
+        renderPrices(freshData);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(freshData));
+      } catch (err) {
+        console.error('خطا در ارتباط با داده‌های زنده:', err);
+        if (!cached) {
+          document.getElementById('time-display').innerText = 'خطا در ارتباط با پایگاه داده';
+        }
+      }
+    }
+
+    // ایجاد خروجی عکس PNG با کیفیت عالی
+    async function exportToPNG() {
+      const exportBox = document.getElementById('capture-area');
+      const watermark = document.getElementById('watermark-export');
+      
+      // نمایش موقت اطلاعات سوشال در عکس
+      watermark.style.display = 'block';
+
+      try {
+        const canvas = await html2canvas(exportBox, {
+          scale: 2, // وضوح دوبرابر Retina
+          useCORS: true,
+          backgroundColor: null
+        });
+
+        const imageURL = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = 'market-pulse-rates.png';
+        link.href = imageURL;
+        link.click();
+      } catch (e) {
+        alert('خطا در ایجاد خروجی عکس');
+      } finally {
+        watermark.style.display = 'none';
+      }
+    }
+
+    // بارگذاری اولیه بلافاصله پس از باز شدن
+    document.addEventListener('DOMContentLoaded', fetchLivePrices);
   </script>
 </body>
 </html>
