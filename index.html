@@ -9,289 +9,409 @@
         /* =========================================================
            تم ۲۰۲۶: پاستلی، شاد و بنتو گرید 🍱✨
            ========================================================= */
+        @import url('https://v1.fontapi.ir/css/Vazir');
+
         :root {
-            /* رنگ‌های پاستلی بهاری */
-            --bg-color: #fdf2f8; /* صورتی خیلی روشن */
-            --card-gold: #fef08a; /* زرد پاستلی نرم */
-            --card-silver: #e2e8f0; /* آبی/طوسی ملایم */
-            --card-dollar: #a7f3d0; /* سبز نعنایی پاستلی */
-            
-            --text-main: #334155;
-            --text-muted: #64748b;
-            
-            /* سایه‌های نرم برای عمق دادن به بنتو */
-            --bento-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            --bento-radius: 35px;
+            --bg:            oklch(97% 0.012 340);   /* صورتی خیلی روشن */
+            --card-gold:     oklch(94% 0.08  90);    /* زرد پاستلی */
+            --card-silver:   oklch(93% 0.015 250);   /* آبی/طوسی ملایم */
+            --card-dollar:   oklch(93% 0.06  155);   /* سبز نعنایی پاستلی */
+            --card-status:   oklch(95% 0.04  310);   /* بنفش ملایم برای کارت وضعیت */
+
+            --text-main:     oklch(28% 0.02  250);
+            --text-muted:    oklch(52% 0.02  250);
+            --text-stale:    oklch(55% 0.06  30);    /* نارنجی برای قیمت قدیمی */
+
+            --shadow:        0 8px 28px oklch(60% 0.04 280 / 0.10);
+            --radius-lg:     32px;
+            --radius-sm:     18px;
         }
 
         body.dark-mode {
-            --bg-color: #0f172a; 
-            --card-gold: rgba(253, 224, 71, 0.15);
-            --card-silver: rgba(148, 163, 184, 0.15);
-            --card-dollar: rgba(52, 211, 153, 0.15);
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --bento-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --bg:            oklch(14% 0.02  260);
+            --card-gold:     oklch(22% 0.05  90);
+            --card-silver:   oklch(20% 0.015 250);
+            --card-dollar:   oklch(20% 0.04  155);
+            --card-status:   oklch(21% 0.035 310);
+            --text-main:     oklch(93% 0.01  250);
+            --text-muted:    oklch(62% 0.015 250);
+            --text-stale:    oklch(72% 0.08  50);
+            --shadow:        0 8px 28px oklch(0% 0 0 / 0.35);
         }
 
-        @import url('https://v1.fontapi.ir/css/Vazir');
-
-        * {
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Vazir', sans-serif;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
         }
 
         body {
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at 10% 20%, rgba(255, 237, 213, 0.4) 0%, transparent 50%),
-                              radial-gradient(circle at 90% 80%, rgba(224, 231, 255, 0.4) 0%, transparent 50%);
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 10% 15%, oklch(90% 0.06 60 / 0.35) 0%, transparent 55%),
+                radial-gradient(ellipse at 88% 82%, oklch(90% 0.06 270 / 0.30) 0%, transparent 55%);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            align-items: flex-start;
+            padding: 32px 16px 48px;
         }
 
         .dashboard-wrapper {
             width: 100%;
-            max-width: 900px;
-            position: relative;
+            max-width: 860px;
         }
 
+        /* ── Header ───────────────────────────────────────── */
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
 
         .header h1 {
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 5vw, 2.6rem);
             font-weight: 900;
-            margin-bottom: 10px;
             letter-spacing: -1px;
+            margin-bottom: 8px;
         }
 
-        /* =========================================================
-           ساختار Bento Grid 🍱
-           ========================================================= */
+        .header-sub {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* ── Bento Grid 🍱 ────────────────────────────────── */
         .bento-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(2, auto);
-            gap: 20px;
-            grid-template-areas: 
-                "gold gold silver"
-                "dollar dollar dollar";
+            gap: 16px;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-areas:
+                "gold   gold   gold   silver silver silver"
+                "dollar dollar dollar dollar status status";
         }
 
         .bento-card {
-            border-radius: var(--bento-radius);
-            padding: 35px 25px;
-            box-shadow: var(--bento-shadow);
+            border-radius: var(--radius-lg);
+            padding: 28px 22px;
+            box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+            gap: 10px;
             position: relative;
             overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(10px);
+            border: 1.5px solid oklch(100% 0 0 / 0.45);
+            backdrop-filter: blur(12px);
+        }
+
+        body.dark-mode .bento-card {
+            border-color: oklch(100% 0 0 / 0.07);
+        }
+
+        .bento-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(135deg, oklch(100% 0 0 / 0.18) 0%, transparent 60%);
+            pointer-events: none;
         }
 
         .bento-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px oklch(60% 0.04 280 / 0.14);
+            transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease;
         }
 
-        /* اختصاص گرید اریا و رنگ به کارت‌ها */
-        .card-gold { grid-area: gold; background-color: var(--card-gold); }
+        .card-gold   { grid-area: gold;   background-color: var(--card-gold); }
         .card-silver { grid-area: silver; background-color: var(--card-silver); }
         .card-dollar { grid-area: dollar; background-color: var(--card-dollar); }
+        .card-status { grid-area: status; background-color: var(--card-status); justify-content: center; }
 
+        /* ── Card internals ───────────────────────────────── */
         .price-title {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            font-weight: 600;
-            margin-bottom: 15px;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .price-value {
-            font-size: 2.8rem;
+            font-size: clamp(1.9rem, 4vw, 2.8rem);
             font-weight: 900;
             direction: ltr;
             letter-spacing: 1px;
-            /* 🪄 جادوی کپی شدن با یک کلیک (Req #3) */
+            line-height: 1.1;
+            /* ✅ قابلیت کپی با یک کلیک (Req #3) */
             user-select: all;
             -webkit-user-select: all;
             cursor: copy;
         }
 
-        /* =========================================================
-           دکمه‌ها و ابزارها
-           ========================================================= */
+        .price-value.stale {
+            color: var(--text-stale);
+        }
+
+        .price-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            direction: rtl;
+            margin-top: 2px;
+        }
+
+        /* کارت وضعیت */
+        .status-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .status-time {
+            font-size: 0.82rem;
+            color: var(--text-main);
+            text-align: center;
+            line-height: 1.7;
+            direction: rtl;
+        }
+
+        /* ── Controls ─────────────────────────────────────── */
         .controls {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
         }
 
         .btn {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            padding: 15px;
-            border-radius: 20px;
+            background: oklch(100% 0 0 / 0.55);
+            backdrop-filter: blur(6px);
+            border: 1.5px solid oklch(100% 0 0 / 0.75);
+            padding: 14px;
+            border-radius: var(--radius-sm);
             color: var(--text-main);
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 3px 10px oklch(60% 0.04 280 / 0.08);
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
         }
-        
+
         body.dark-mode .btn {
-            background: rgba(30, 41, 59, 0.6);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: oklch(22% 0.02 260 / 0.65);
+            border-color: oklch(100% 0 0 / 0.08);
         }
 
-        .btn:active { transform: scale(0.95); }
-        .btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 18px oklch(60% 0.04 280 / 0.12); }
+        .btn:active { transform: scale(0.94); }
+        .btn svg    { width: 22px; height: 22px; fill: currentColor; }
 
-        /* ریسپانسیو اختصاصی برای موبایل */
-        @media (max-width: 768px) {
+        /* ── Responsive ───────────────────────────────────── */
+        @media (max-width: 640px) {
+            .bento-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-template-areas:
+                    "gold   gold"
+                    "silver dollar"
+                    "status status";
+            }
+            .price-value { font-size: 1.7rem; }
+        }
+
+        @media (max-width: 380px) {
             .bento-grid {
                 grid-template-columns: 1fr;
-                grid-template-areas: 
+                grid-template-areas:
                     "gold"
                     "silver"
-                    "dollar";
+                
+                    "silver dollar"
+                    "status status";
             }
-            .price-value { font-size: 2.2rem; }
-            .header h1 { font-size: 2rem; }
+            .price-value { font-size: 1.7rem; }
         }
 
-        .exporting .controls { display: none; }
+        @media (max-width: 380px) {
+            .bento-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "gold"
+                    "silver"
+                important; }
+            .bento-card:hover { transform: none; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="dashboard-wrapper" id="capture-area">
-        
-        <div class="header">
-            <h1>نبض بازار 💖</h1>
-            <p id="last-update" style="color: var(--text-muted); font-size: 1rem; font-weight: 500;">در حال دریافت اطلاعات تقویم خورشیدی... ⏳</p>
-        </div>
+<div class="dashboard-wrapper" id="capture-area">
 
-        <div class="bento-grid">
-            <!-- کارت طلا -->
-            <div class="bento-card card-gold">
-                <div class="price-title">🌟 طلای ۱۸ عیار (میلی‌گرم)</div>
-                <div class="price-value" id="gold-price" title="برای کپی کلیک کنید">---</div>
-            </div>
-
-            <!-- کارت نقره -->
-            <div class="bento-card card-silver">
-                <div class="price-title">🛸 نقره ۹۹۹</div>
-                <div class="price-value" id="silver-price" title="برای کپی کلیک کنید">---</div>
-            </div>
-
-            <!-- کارت دلار -->
-            <div class="bento-card card-dollar">
-                <div class="price-title">💸 دلار آمریکا (ریال)</div>
-                <div class="price-value" id="dollar-price" title="برای کپی کلیک کنید">---</div>
-            </div>
-        </div>
-
-        <!-- ابزارها و دکمه‌ها -->
-        <div class="controls">
-            <button class="btn" onclick="toggleTheme()" title="تغییر تم">
-                <svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18zm0-2a7 7 0 1 0 0-14 7 7 0 0 0 0 14zm0-2.5A4.5 4.5 0 1 1 12 7.5v9z"/></svg>
-            </button>
-            <button class="btn" onclick="exportToPNG()" title="خروجی عکس">
-                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-            </button>
-            <button class="btn" onclick="fetchData()" title="به‌روزرسانی">
-                <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-            </button>
-        </div>
+    <div class="header">
+        <h1>نبض بازار 🌸</h1>
+        <p class="header-sub" id="last-run">در حال دریافت اطلاعات... ⏳</p>
     </div>
 
-    <script>
-        const formatNumber = (num) => {
-            if (!num) return "نامشخص";
-            return new Intl.NumberFormat('fa-IR').format(num);
-        };
+    <div class="bento-grid">
 
-        const updateUI = (data) => {
-            document.getElementById('gold-price').innerText = formatNumber(data.gold_mg_rial);
-            document.getElementById('silver-price').innerText = formatNumber(data.silver_mg_rial);
-            document.getElementById('dollar-price').innerText = formatNumber(data.dollar_rial);
-            
-            if(data.updated_at) {
-                const date = new Date(data.updated_at);
-                // 🌞 تبدیل به تاریخ شمسی و ساعت تهران با کلاس جهانی!
-                const options = { 
-                    calendar: 'persian', 
-                    timeZone: 'Asia/Tehran',
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric', 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                };
-                const persianDate = new Intl.DateTimeFormat('fa-IR', options).format(date);
-                document.getElementById('last-update').innerText = "⏰ آخرین به‌روزرسانی: " + persianDate;
-            }
-        };
+        <!-- کارت طلا 🌟 -->
+        <div class="bento-card card-gold">
+            <div class="price-title">🌟 طلای ۱۸ عیار (میلی‌گرم)</div>
+            <div class="price-value" id="gold-price" title="کلیک برای کپی">---</div>
+            <div class="price-meta" id="gold-meta"></div>
+        </div>
 
-        const fetchData = async () => {
-            try {
-                const response = await fetch(`./data/prices.json?t=${new Date().getTime()}`);
-                const data = await response.json();
-                localStorage.setItem('market_pulse_data', JSON.stringify(data));
-                updateUI(data);
-            } catch (error) {
-                console.error("خطا در دریافت اطلاعات", error);
-                document.getElementById('last-update').innerText = "⚠️ خطا در دریافت اینترنت! نمایش دیتای آفلاین...";
-                const cachedData = localStorage.getItem('market_pulse_data');
-                if (cachedData) updateUI(JSON.parse(cachedData));
-            }
-        };
+        <!-- کارت نقره 🩵 -->
+        <div class="bento-card card-silver">
+            <div class="price-title">🩵 نقره ۹۹۹</div>
+            <div class="price-value" id="silver-price" title="کلیک برای کپی">---</div>
+            <div class="price-meta" id="silver-meta"></div>
+        </div>
 
-        const toggleTheme = () => {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('market_pulse_theme', isDark ? 'dark' : 'light');
-        };
+        <!-- کارت دلار 💚 -->
+        <div class="bento-card card-dollar">
+            <div class="price-title">💚 دلار آمریکا (ریال)</div>
+            <div class="price-value" id="dollar-price" title="کلیک برای کپی">---</div>
+            <div class="price-meta" id="dollar-meta"></div>
+        </div>
 
-        window.onload = () => {
-            if (localStorage.getItem('market_pulse_theme') === 'dark') document.body.classList.add('dark-mode');
+        <!-- کارت وضعیت 🔄 -->
+        <div class="bento-card card-status">
+            <div class="status-title">🔄 آخرین اجرای ربات</div>
+            <div class="status-time" id="status-time">---</div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="toggleTheme()" title="تغییر تم">
+            <svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18zm0-2a7 7 0 1 0 0-14 7 7 0 0 0 0 14zm0-2.5A4.5 4.5 0 1 1 12 7.5v9z"/></svg>
+        </button>
+        <button class="btn" onclick="exportToPNG()" title="خروجی عکس">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        </button>
+        <button class="btn" onclick="fetchData()" title="به‌روزرسانی">
+            <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        </button>
+    </div>
+
+</div>
+
+<script>
+    // ── Helpers ──────────────────────────────────────────────
+    const formatNumber = (num) => {
+        if (!num) return "نامشخص";
+        return new Intl.NumberFormat('fa-IR').format(num);
+    };
+
+    const toPersianDate = (isoString) => {
+        if (!isoString) return null;
+        const date = new Date(isoString);
+        return new Intl.DateTimeFormat('fa-IR', {
+            calendar:  'persian',
+            timeZone:  'Asia/Tehran',
+            year:      'numeric',
+            month:     'long',
+            day:       'numeric',
+            hour:      '2-digit',
+            minute:    '2-digit'
+        }).format(date);
+    };
+
+    // ── UI Update ─────────────────────────────────────────────
+    const updateUI = (data) => {
+        // --- طلا ---
+        const goldEl   = document.getElementById('gold-price');
+        const goldMeta = document.getElementById('gold-meta');
+        const goldFresh = Boolean(data.gold_mg_rial && data.gold_last_success);
+        goldEl.textContent = formatNumber(data.gold_mg_rial);
+        goldEl.classList.toggle('stale', !goldFresh);
+        goldMeta.textContent = goldFresh
+            ? ''
+            : (data.gold_last_success ? '⚠️ آخرین قیمت ثبت‌شده: ' + toPersianDate(data.gold_last_success) : '⚠️ قیمتی ثبت نشده');
+
+        // --- نقره ---
+        const silverEl   = document.getElementById('silver-price');
+        const silverMeta = document.getElementById('silver-meta');
+        const silverFresh = Boolean(data.silver_mg_rial && data.silver_last_success);
+        silverEl.textContent = formatNumber(data.silver_mg_rial);
+        silverEl.classList.toggle('stale', !silverFresh);
+        silverMeta.textContent = silverFresh
+            ? ''
+            : (data.silver_last_success ? '⚠️ آخرین قیمت ثبت‌شده: ' + toPersianDate(data.silver_last_success) : '⚠️ قیمتی ثبت نشده');
+
+        // --- دلار ---
+        const dollarEl   = document.getElementById('dollar-price');
+        const dollarMeta = document.getElementById('dollar-meta');
+        const dollarFresh = Boolean(data.dollar_rial && data.dollar_last_success);
+        dollarEl.textContent = formatNumber(data.dollar_rial);
+        dollarEl.classList.toggle('stale', !dollarFresh);
+        dollarMeta.textContent = dollarFresh
+            ? ''
+            : (data.dollar_last_success ? '⚠️ آخرین قیمت ثبت‌شده: ' + toPersianDate(data.dollar_last_success) : '⚠️ قیمتی ثبت نشده');
+
+        // --- کارت وضعیت ---
+        const statusEl = document.getElementById('status-time');
+        const lastRun  = document.getElementById('last-run');
+        if (data.last_run_at) {
+            const t = toPersianDate(data.last_run_at);
+            statusEl.textContent = t;
+            lastRun.textContent  = '⏰ آخرین اجرای ربات: ' + t;
+        }
+    };
+
+    // ── Fetch ─────────────────────────────────────────────────
+    const fetchData = async () => {
+        try {
+            const response = await fetch(`./data/prices.json?t=${Date.now()}`);
+            const data = await response.json();
+            localStorage.setItem('market_pulse_data', JSON.stringify(data));
+            updateUI(data);
+        } catch (error) {
+            console.error("خطا در دریافت اطلاعات", error);
+            document.getElementById('last-run').textContent = "⚠️ خطا در اتصال! نمایش دیتای آفلاین...";
             const cachedData = localStorage.getItem('market_pulse_data');
             if (cachedData) updateUI(JSON.parse(cachedData));
-            fetchData();
-        };
+        }
+    };
 
-        const exportToPNG = () => {
-            const wrap = document.getElementById('capture-area');
-            document.body.classList.add('exporting');
-            html2canvas(wrap, {
-                backgroundColor: document.body.classList.contains('dark-mode') ? '#0f172a' : '#fdf2f8',
-                scale: 2 
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'Nabz_Bazaar_2026.png'; 
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                document.body.classList.remove('exporting');
-            });
-        };
-    </script>
+    // ── Theme ─────────────────────────────────────────────────
+    const toggleTheme = () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('market_pulse_theme', isDark ? 'dark' : 'light');
+    };
+
+    // ── Init ──────────────────────────────────────────────────
+    window.onload = () => {
+        if (localStorage.getItem('market_pulse_theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+        const cachedData = localStorage.getItem('market_pulse_data');
+        if (cachedData) updateUI(JSON.parse(cachedData));
+        fetchData();
+    };
+
+    // ── Export ────────────────────────────────────────────────
+    const exportToPNG = () => {
+        const wrap = document.getElementById('capture-area');
+        document.body.classList.add('exporting');
+        html2canvas(wrap, {
+            backgroundColor: document.body.classList.contains('dark-mode') ? '#161b2e' : '#faf0f6',
+            scale: 2
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'Nabz_Bazaar_2026.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            document.body.classList.remove('exporting');
+        });
+    };
+</script>
 </body>
-</html>
