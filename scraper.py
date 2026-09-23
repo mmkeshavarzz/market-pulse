@@ -114,11 +114,12 @@ def main():
         "last_run_at": now_iso
     }
 
-    # GOLD (ریال / گرم)
+    # GOLD (ریال / گرم -> ریال / میلی‌گرم)
     try:
         g = fetch_price(URLS["gold"])
         if g is not None:
-            data["gold"] = g
+            gold_per_mg = round(g / 1000)  # 1 گرم = 1000 میلی‌گرم
+            data["gold"] = gold_per_mg
             data["gold_last_success"] = now_iso
     except Exception as e:
         print(f"[WARN] gold fetch failed: {e}")
