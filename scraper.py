@@ -77,12 +77,20 @@ def get_dollar_rate():
             soup = BeautifulSoup(res.text, 'html.parser')
             
             # جستجو در المان‌های مربوط به قیمت اسکناس
-            for tag in soup.find_all(['span', 'div', 'p', 'h3']):
+            for tag in soup.find_all(['span', 'div', 'p', 'h3', 'td']):
                 t = tag.text.strip()
-                if 'ریال' in t and any(c.isdigit() for c in t):
-                    val = clean_number(t)
-                    # دلار حداقل بالای ۱۰۰ هزار تومن (۱ میلیون ریال) است و سقف بالایی نمی‌گذاریم
-                    if val > 1_000_000:
+                # می‌گردیم دنبال تگی که توش 'ریال' باشه
+                if 'ریال' in t:
+                    # فقط الگوی قیمت (عددی که با کاما یا نقطه جدا شده) رو می‌کشیم بیرون
+                    # مثلا: 2,314,600 یا 2.314.600
+                    match = re.search(r'(\d{1,3}(?:[,،.\s]\d{3})+|\d{6,8})', t)
+                    if match:
+                        # فقط همون بخش مچ شده رو تمیز می‌کنیم
+                        val = clean_number(match.group(1))
+
+                    # یه سقف و کف منطقی برای دلار می‌ذاریم (مثلا بین 400 هزار ریال تا 2 میلیون ریال)
+                    # اینجوری دیگه عدد 150 رقمی برنمی‌گردونه!
+                    if 400_000 < val < 2_000_000:
                         return val
         except Exception:
             pass
