@@ -1,114 +1,152 @@
 import requests
 from bs4 import BeautifulSoup
 import json
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import os
 import re
-from datetime import datetime, timezone, timedelta
-import logging
 
-# تنظیمات لاگر
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# منطقه زمانی تهران (برای ثبت دقیق زمان حتی توی سرورهای خارجی گیت‌هاب)
-TEHRAN_TZ = timezone(timedelta(hours=3, minutes=30))
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Language": "fa-IR,fa;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Cache-Control": "max-age=0",
-    "Connection": "keep-alive"
+# =========================
+# Config
+# =========================
+URLS = {
+    "gold": "https://www.tgju.org/profile/geram18",          # طلای 18 عیار (هر گرم)
+    "silver": "https://www.tgju.org/profile/silver_999",     # نقره 999 (هر گرم)
+    "usd": "https://www.tgju.org/profile/price_dollar_rl",   # دلار آزاد (ریال)
 }
 
-def get_digikala_data():
-    url = "https://www.digikala.com/wealth/my-assets/"
-    try:
-        logging.info("در حال ارسال درخواست به دیجی‌کالا... 🛍️")
-        response = requests.get(url, headers=HEADERS, timeout=15)
-        
-        if response.status_code != 200:
-            logging.error("دیجی‌کالا درخواست ما را مسدود کرد! 🚫")
-            return None, None
+DATA_FILE = "data/prices.json"
 
-        # 🐛 باگ‌فیکس: دیجی‌کالا تگ __NEXT_DATA__ را حذف کرده است.
-        # راه‌حل: جستجوی مستقیم قیمت در کل سورس صفحه!
-        html_text = response.text
-        gold_match = re.search(r'"gold_price"\s*:\s*(\d+)', html_text)
-        silver_match = re.search(r'"silver_price"\s*:\s*(\d+)', html_text)
-        
-        gold_price = float(gold_match.group(1)) if gold_match else None
-        silver_price = float(silver_match.group(1)) if silver_match else None
-        
-        if gold_price and silver_price:
-            logging.info(f"طلا: {gold_price} | نقره: {silver_price} 🥇🥈")
-            return gold_price, silver_price
-        else:
-            logging.error("الگوی قیمت طلا و نقره در دیجی‌کالا پیدا نشد!")
-            return None, None
-            
-    except Exception as e:
-        logging.error(f"خطای ارتباط با دیجی‌کالا: {e}")
-        return None, None
+# =========================
+# Helpers
+# =========================
+def now_tehran():
+    return datetime.now(ZoneInfo("Asia/Tehran"))
 
-def get_dollar_data():
-    url = "https://isignal.ir/goldال درخواست به سy/usdollar/"
-    try:
-        logging.info("در حال ارسال درخواست به سیگنال... 📈")
-        response = requests.get(url, headers=HEADERS, timeout=15)
-        
-        if response.status_code != 200:
-            logging.error("سیگنال درخواست ما را مسدود کرد. 🚫")
-            return None
-            
-        soup = BeautifulSoup(response.text, 'html.parser')
-        text = soup.get_text()
-        
-        # 🐛 باگ‌فیکس: رجکس منعطف‌تر برای پیدا کردن دلار
-        match = re.search(r'دلار\s*آزاد.*?([\d,]{6,})', text, re.DOTALL)
-        if match:
-            price_str = re.sub(r'[^\d]', '', match.group(1))
-            logging.info(f"قیمت دلار پیدا شد: {price_str} 💵")
-            return float(price_str)
-        else:
-            logging.error("الگوی قیمت دلار در صفحه پیدا نشد.")
-            return None
-    except Exception as e:
-        logging.error(f"خطای ارتباط با سیگنال: {e}")
+def jalali_now_str():
+    # خروجی نمونه: 1405/07/02 14:35:10
+    # تقویم فارسی بدون وابستگی خارجی، با Intl در فرانت هم فرمت می‌شود
+    t = now_tehran()
+    return t.strftime("%Y-%m-%d %H:%M:%S")
+
+def parse_price_from_tgju(html_text: str):
+    """
+    تلاش می‌کند قیمت را از ساختارهای رایج TGJU استخراج کند.
+    """
+    soup = BeautifulSoup(html_text, "html.parser")
+    text = soup.get_text(" ", strip=True)
+
+    # الگوهای رایج (ارقام با کاما)
+    candidates = []
+
+    # 1) data attributes / price blocks
+    for sel in [
+        '[data-col="info.last_trade.PDrCotVal"]',
+        ".text-5xl",
+        ".value",
+        ".price",
+        "#main",
+    ]:
+        nodes = soup.select(sel)
+        for n in nodes:
+            found = re.findall(r"\b\d{1,3}(?:,\d{3})+\b", n.get_text(" ", strip=True))
+            candidates.extend(found)
+
+    # 2) fallback روی کل متن
+    if not candidates:
+        candidates = re.findall(r"\b\d{1,3}(?:,\d{3})+\b", text)
+
+    # فیلتر اعداد نامعتبر/خیلی کوچک
+    numeric = []
+    for c in candidates:
+        v = int(c.replace(",", ""))
+        if v > 1000:
+            numeric.append(v)
+
+    if not numeric:
         return None
 
+    # اغلب اولین مقدار معتبر همان قیمت جاری است
+    return numeric[0]
+
+def fetch_price(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; MarketPulseBot/2.0; +https://github.com/)"
+    }
+    r = requests.get(url, headers=headers, timeout=25)
+    r.raise_for_status()
+    return parse_price_from_tgju(r.text)
+
+def ensure_data_dir():
+    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
+
+def load_existing():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+def to_iso_tehran(dt_obj):
+    return dt_obj.isoformat()
+
+# =========================
+# Main
+# =========================
 def main():
-    os.makedirs('data', exist_ok=True)
-    json_path = 'data/prices.json'
-    
-    old_data = {}
-    if os.path.exists(json_path):
-        with open(json_path, 'r', encoding='utf-8') as f:
-            old_data = json.load(f)
+    ensure_data_dir()
+    existing = load_existing()
 
-    gold, silver = get_digikala_data()
-    dollar = get_dollar_data()
+    now = now_tehran()
+    now_iso = to_iso_tehran(now)
 
-    current_time_tehran = datetime.now(TEHRAN_TZ).isoformat()
+    # ساختار خروجی با حفظ مقادیر قبلی
+    data = {
+        "gold": existing.get("gold"),
+        "silver": existing.get("silver"),
+        "usd": existing.get("usd"),
 
-    # ساختار جدید: هر ارز زمان آخرین موفقیت خودش را دارد
-    # اگر قیمت جدید نگرفتیم، مقدار و زمان قبلی حفظ می‌شود
-    new_data = {
-        "gold_mg_rial":        gold   if gold   else old_data.get("gold_mg_rial"),
-        "silver_mg_rial":      silver if silver else old_data.get("silver_mg_rial"),
-        "dollar_rial":         dollar if dollar else old_data.get("dollar_rial"),
-        # زمان آخرین fetch موفق برای هر ارز به صورت جداگانه
-        "gold_last_success":   current_time_tehran if gold   else old_data.get("gold_last_success"),
-        "silver_last_success": current_time_tehran if silver else old_data.get("silver_last_success"),
-        "dollar_last_success": current_time_tehran if dollar else old_data.get("dollar_last_success"),
-        # زمان آخرین اجرای اسکریپت (چه موفق چه ناموفق)
-        "last_run_at": current_time_tehran
+        # last_success هر فیلد
+        "gold_last_success": existing.get("gold_last_success"),
+        "silver_last_success": existing.get("silver_last_success"),
+        "usd_last_success": existing.get("usd_last_success"),
+
+        # آخرین اجرای ربات
+        "last_run_at": now_iso
     }
 
-    with open(json_path, 'w', encoding='utf-8') as f:
-        json.dump(new_data, f, ensure_ascii=False, indent=4)
+    # GOLD (ریال / گرم)
+    try:
+        g = fetch_price(URLS["gold"])
+        if g is not None:
+            data["gold"] = g
+            data["gold_last_success"] = now_iso
+    except Exception as e:
+        print(f"[WARN] gold fetch failed: {e}")
 
-    has_new_data = bool(gold or silver or dollar)
-    logging.info(f"فایل prices.json به‌روزرسانی شد. (دیتا جدید بود؟ {has_new_data})")
+    # SILVER 999 (ریال / گرم -> ریال / میلی‌گرم)
+    try:
+        s = fetch_price(URLS["silver"])
+        if s is not None:
+            silver_per_mg = round(s / 1000)  # 1 گرم = 1000 میلی‌گرم
+            data["silver"] = silver_per_mg
+            data["silver_last_success"] = now_iso
+    except Exception as e:
+        print(f"[WARN] silver fetch failed: {e}")
+
+    # USD (ریال)
+    try:
+        u = fetch_price(URLS["usd"])
+        if u is not None:
+            data["usd"] = u
+            data["usd_last_success"] = now_iso
+    except Exception as e:
+        print(f"[WARN] usd fetch failed: {e}")
+
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    print("[OK] prices.json updated")
+    print(json.dumps(data, ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":
     main()
