@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>رصد لحظه‌ای قیمت‌ها</title>
+  <style>
+    body { font-family: Tahoma, sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 320px; text-align: center; }
+    .item { margin: 18px 0; padding: 12px; background: #334155; border-radius: 10px; }
+    .val { font-size: 20px; font-weight: bold; color: #38bdf8; display: block; margin-top: 5px; }
+    .time { font-size: 11px; color: #94a3b8; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>📊 نرخ‌های زنده</h2>
+    <div class="item">قیمت هر میلی‌گرم طلا: <span id="gold" class="val">در حال بارگذاری...</span></div>
+    <div class="item">قیمت هر میلی‌گرم نقره: <span id="silver" class="val">در حال بارگذاری...</span></div>
+    <div class="item">نرخ دلار (ریال): <span id="dollar" class="val">در حال بارگذاری...</span></div>
+    <div class="time" id="time"></div>
+  </div>
+
+  <script>
+    async function updateData() {
+      try {
+        const res = await fetch('./data/prices.json?t=' + Date.now());
+        const data = await res.json();
+        document.getElementById('gold').innerText = data.goldMgRial.toLocaleString('fa-IR') + ' ریال';
+        document.getElementById('silver').innerText = data.silverMgRial.toLocaleString('fa-IR') + ' ریال';
+        document.getElementById('dollar').innerText = data.dollarRial.toLocaleString('fa-IR') + ' ریال';
+        document.getElementById('time').innerText = 'آخرین آپدیت: ' + new Date(data.lastUpdated).toLocaleTimeString('fa-IR');
+      } catch (e) {
+        console.error("خطا در بارگذاری قیمت‌ها");
+      }
+    }
+    updateData();
+  </script>
+</body>
+</html>
