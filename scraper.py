@@ -1,3 +1,4 @@
+import traceback
 import json
 import os
 import re
@@ -130,16 +131,29 @@ def fetch_digikala_prices() -> tuple[Optional[int], Optional[int]]:
         )
         response.raise_for_status()
 
+        print(
+            "Digikala status:",
+            response.status_code,
+            "content length:",
+            len(response.text),
+        )
+
         soup = BeautifulSoup(response.text, "html.parser")
-        next_data = soup.find("script", id="__NEXT_DATA__")
+        next_data = soup.find(
+            "script",
+            id="__NEXT_DATA__",
+        )
 
         if next_data is None:
             raise RuntimeError(
-                "داده __NEXT_DATA__ در صفحه دیجی‌کالا پیدا نشد. "
-                "احتمالاً ساختار صفحه تغییر کرده یا دسترسی مسدود شده است."
+                "داده __NEXT_DATA__ در پاسخ دیجی‌کالا پیدا نشد."
             )
 
-        raw_json = next_data.string or next_data.get_text()
+        raw_json = (
+            next_data.string
+            or next_data.get_text()
+        )
+
         payload = json.loads(raw_json)
 
         gold_raw = find_asset_price(
@@ -153,28 +167,30 @@ def fetch_digikala_prices() -> tuple[Optional[int], Optional[int]]:
         )
 
         gold_rial = (
-            convert_to_rial(gold_raw, DIGIKALA_PRICE_UNIT)
+            convert_to_rial(
+                gold_raw,
+                DIGIKALA_PRICE_UNIT,
+            )
             if gold_raw is not None
             else None
         )
 
         silver_rial = (
-            convert_to_rial(silver_raw, DIGIKALA_PRICE_UNIT)
+            convert_to_rial(
+                silver_raw,
+                DIGIKALA_PRICE_UNIT,
+            )
             if silver_raw is not None
             else None
         )
-
-        if gold_rial is None:
-            print("هشدار: قیمت طلای ۱۸ عیار پیدا نشد.")
-
-        if silver_rial is None:
-            print("هشدار: قیمت نقره ۹۹۹ پیدا نشد.")
 
         return gold_rial, silver_rial
 
     except Exception as error:
         print(f"Digikala Fetch Error: {error}")
+        traceback.print_exc()
         return None, None
+
 
 
 def fetch_isignal_dollar() -> Optional[int]:
@@ -190,7 +206,18 @@ def fetch_isignal_dollar() -> Optional[int]:
         )
         response.raise_for_status()
 
-        soup = BeautifulSoup(response.text, "html.parser")
+        print(
+            "iSignal status:",
+            response.status_code,
+            "content length:",
+            len(response.text),
+        )
+
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser",
+        )
+
         text = normalize_digits(
             soup.get_text(" ", strip=True)
         )
@@ -209,9 +236,11 @@ def fetch_isignal_dollar() -> Optional[int]:
             if value is None:
                 continue
 
-            value_rial = convert_to_rial(value, unit)
+            value_rial = convert_to_rial(
+                value,
+                unit,
+            )
 
-            # بازه منطقی نرخ دلار برحسب ریال
             if 500_000 <= value_rial <= 100_000_000:
                 candidates.append(value_rial)
 
@@ -220,11 +249,11 @@ def fetch_isignal_dollar() -> Optional[int]:
                 "هیچ قیمت معتبر دلاری در صفحه سیگنال پیدا نشد."
             )
 
-        # نخستین مقدار دارای واحد پولی
         return candidates[0]
 
     except Exception as error:
         print(f"iSignal Fetch Error: {error}")
+        traceback.print_exc()
         return None
 
 
