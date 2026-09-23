@@ -349,11 +349,11 @@
     }
 
     // متد فرمت‌دهی عدد به ریال و فارسی
-    function formatRial(val) {
+    function formatRial(value) {
       const number = Number(value);
 
       if (!Number.isFinite(number) || number <= 0) {
-        return "نامشخص";
+        return "---";
       }
       return new Intl.NumberFormat("fa-IR").format(number);
     }
