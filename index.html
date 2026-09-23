@@ -1,417 +1,418 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نبض بازار | داشبورد پاستلی ۲۰۲۶ 🍭</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        /* =========================================================
-           تم ۲۰۲۶: پاستلی، شاد و بنتو گرید 🍱✨
-           ========================================================= */
-        @import url('https://v1.fontapi.ir/css/Vazir');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نبض بازار | Market Pulse</title>
+  <meta name="description" content="داشبورد لحظه‌ای نبض بازار - طلا، نقره و دلار" />
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --bg2:#eef3fa;
+      --text:#1f2a37;
+      --muted:#6b7280;
+      --glass: rgba(255,255,255,.62);
+      --stroke: rgba(255,255,255,.5);
+      --shadow: 0 12px 30px rgba(17,24,39,.12);
 
-        :root {
-            --bg:            oklch(97% 0.012 340);   /* صورتی خیلی روشن */
-            --card-gold:     oklch(94% 0.08  90);    /* زرد پاستلی */
-            --card-silver:   oklch(93% 0.015 250);   /* آبی/طوسی ملایم */
-            --card-dollar:   oklch(93% 0.06  155);   /* سبز نعنایی پاستلی */
-            --card-status:   oklch(95% 0.04  310);   /* بنفش ملایم برای کارت وضعیت */
+      --c1:#9ac6ff;
+      --c2:#8fe3c5;
+      --c3:#ffd79a;
+      --c4:#d9b3ff;
 
-            --text-main:     oklch(28% 0.02  250);
-            --text-muted:    oklch(52% 0.02  250);
-            --text-stale:    oklch(55% 0.06  30);    /* نارنجی برای قیمت قدیمی */
+      --ok:#10b981;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+    }
 
-            --shadow:        0 8px 28px oklch(60% 0.04 280 / 0.10);
-            --radius-lg:     32px;
-            --radius-sm:     18px;
-        }
+    [data-theme="deep-dark"]{
+      --bg:#081227;
+      --bg2:#0b1a34;
+      --text:#dbeafe;
+      --muted:#93a3bf;
+      --glass: rgba(13,24,46,.58);
+      --stroke: rgba(88,131,189,.22);
+      --shadow: 0 16px 34px rgba(0,0,0,.42);
 
-        body.dark-mode {
-            --bg:            oklch(14% 0.02  260);
-            --card-gold:     oklch(22% 0.05  90);
-            --card-silver:   oklch(20% 0.015 250);
-            --card-dollar:   oklch(20% 0.04  155);
-            --card-status:   oklch(21% 0.035 310);
-            --text-main:     oklch(93% 0.01  250);
-            --text-muted:    oklch(62% 0.015 250);
-            --text-stale:    oklch(72% 0.08  50);
-            --shadow:        0 8px 28px oklch(0% 0 0 / 0.35);
-        }
+      --c1:#2e5cff;
+      --c2:#00b894;
+      --c3:#f7b731;
+      --c4:#7f5af0;
+    }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Vazir', sans-serif;
-            transition: background-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
-        }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 95% -10%, rgba(122,162,255,.16), transparent 60%),
+        radial-gradient(1000px 700px at -10% 110%, rgba(102,223,192,.15), transparent 60%),
+        linear-gradient(135deg,var(--bg),var(--bg2));
+      min-height:100vh;
+    }
 
-        body {
-            background-color: var(--bg);
-            background-image:
-                radial-gradient(ellipse at 10% 15%, oklch(90% 0.06 60 / 0.35) 0%, transparent 55%),
-                radial-gradient(ellipse at 88% 82%, oklch(90% 0.06 270 / 0.30) 0%, transparent 55%);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 32px 16px 48px;
-        }
+    .container{
+      max-width:1200px;
+      margin:24px auto;
+      padding:0 16px 24px;
+    }
 
-        .dashboard-wrapper {
-            width: 100%;
-            max-width: 860px;
-        }
+    .topbar{
+      display:flex;
+      gap:12px;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
 
-        /* ── Header ───────────────────────────────────────── */
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
+    .brand{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 14px;
+      border-radius:16px;
+      background:var(--glass);
+      border:1px solid var(--stroke);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      font-weight:900;
+      letter-spacing:.2px;
+    }
 
-        .header h1 {
-            font-size: clamp(1.8rem, 5vw, 2.6rem);
-            font-weight: 900;
-            letter-spacing: -1px;
-            margin-bottom: 8px;
-        }
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    .btn{
+      border:0; cursor:pointer;
+      border-radius:12px;
+      padding:10px 12px;
+      color:var(--text);
+      background:var(--glass);
+      border:1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      font-weight:700;
+    }
 
-        .header-sub {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
 
-        /* ── Bento Grid 🍱 ────────────────────────────────── */
-        .bento-grid {
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(6, 1fr);
-            grid-template-areas:
-                "gold   gold   gold   silver silver silver"
-                "dollar dollar dollar dollar status status";
-        }
+    .card{
+      border-radius:20px;
+      padding:16px;
+      background:var(--glass);
+      border:1px solid var(--stroke);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
 
-        .bento-card {
-            border-radius: var(--radius-lg);
-            padding: 28px 22px;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            position: relative;
-            overflow: hidden;
-            border: 1.5px solid oklch(100% 0 0 / 0.45);
-            backdrop-filter: blur(12px);
-        }
+    .card::after{
+      content:"";
+      position:absolute; inset:auto -30% -60% auto;
+      width:220px; height:220px; border-radius:50%;
+      background: radial-gradient(circle, rgba(255,255,255,.42), transparent 60%);
+      pointer-events:none;
+    }
 
-        body.dark-mode .bento-card {
-            border-color: oklch(100% 0 0 / 0.07);
-        }
+    .span-4{grid-column: span 4}
+    .span-6{grid-column: span 6}
+    .span-12{grid-column: span 12}
 
-        .bento-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            background: linear-gradient(135deg, oklch(100% 0 0 / 0.18) 0%, transparent 60%);
-            pointer-events: none;
-        }
+    .metric{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
+    }
 
-        .bento-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 40px oklch(60% 0.04 280 / 0.14);
-            transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease;
-        }
+    .title{
+      font-size:.95rem; color:var(--muted); font-weight:700;
+      display:flex; align-items:center; gap:8px;
+    }
 
-        .card-gold   { grid-area: gold;   background-color: var(--card-gold); }
-        .card-silver { grid-area: silver; background-color: var(--card-silver); }
-        .card-dollar { grid-area: dollar; background-color: var(--card-dollar); }
-        .card-status { grid-area: status; background-color: var(--card-status); justify-content: center; }
+    .price{
+      font-size:1.8rem; font-weight:900; line-height:1.3;
+      margin-top:8px;
+      letter-spacing:.2px;
+    }
 
-        /* ── Card internals ───────────────────────────────── */
-        .price-title {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+    .unit{font-size:.92rem; color:var(--muted); font-weight:700}
+    .meta{
+      margin-top:8px; font-size:.82rem; color:var(--muted); line-height:1.9;
+    }
 
-        .price-value {
-            font-size: clamp(1.9rem, 4vw, 2.8rem);
-            font-weight: 900;
-            direction: ltr;
-            letter-spacing: 1px;
-            line-height: 1.1;
-            /* ✅ قابلیت کپی با یک کلیک (Req #3) */
-            user-select: all;
-            -webkit-user-select: all;
-            cursor: copy;
-        }
+    .badge{
+      font-size:.75rem;
+      padding:5px 9px;
+      border-radius:999px;
+      font-weight:800;
+      background:rgba(16,185,129,.12);
+      color:var(--ok);
+    }
+    .badge.warn{
+      background:rgba(245,158,11,.14);
+      color:var(--warn);
+    }
 
-        .price-value.stale {
-            color: var(--text-stale);
-        }
+    .copy-btn{
+      margin-top:10px;
+      font-size:.78rem;
+      padding:7px 10px;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      background:#ffffffaa;
+      color:#111827;
+      font-weight:800;
+    }
 
-        .price-meta {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            direction: rtl;
-            margin-top: 2px;
-        }
+    .gold{background: linear-gradient(160deg, color-mix(in srgb, var(--c3) 25%, transparent), var(--glass));}
+    .silver{background: linear-gradient(160deg, color-mix(in srgb, var(--c1) 22%, transparent), var(--glass));}
+    .usd{background: linear-gradient(160deg, color-mix(in srgb, var(--c2) 20%, transparent), var(--glass));}
+    .status{background: linear-gradient(160deg, color-mix(in srgb, var(--c4) 20%, transparent), var(--glass));}
 
-        /* کارت وضعیت */
-        .status-title {
-            font-size: 0.88rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-align: center;
-        }
+    .social{
+      margin-top:14px;
+      display:flex; justify-content:center; gap:10px;
+      padding:12px;
+      border-radius:16px;
+      background:var(--glass);
+      border:1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+    .icon{
+      width:40px;height:40px;border-radius:12px;
+      display:grid;place-items:center;
+      background:#ffffffb0;
+      border:1px solid #ffffff80;
+    }
+    [data-theme="deep-dark"] .icon{background:#0f2747;border-color:#1f3b66}
+    .icon svg{width:22px;height:22px;fill:currentColor}
 
-        .status-time {
-            font-size: 0.82rem;
-            color: var(--text-main);
-            text-align: center;
-            line-height: 1.7;
-            direction: rtl;
-        }
+    .toast{
+      position:fixed; left:50%; transform:translateX(-50%);
+      bottom:20px; z-index:99;
+      background:#111827; color:#fff;
+      border-radius:12px; padding:10px 14px;
+      font-size:.86rem; opacity:0; pointer-events:none; transition:.2s;
+    }
+    .toast.show{opacity:1}
 
-        /* ── Controls ─────────────────────────────────────── */
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 24px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            background: oklch(100% 0 0 / 0.55);
-            backdrop-filter: blur(6px);
-            border: 1.5px solid oklch(100% 0 0 / 0.75);
-            padding: 14px;
-            border-radius: var(--radius-sm);
-            color: var(--text-main);
-            cursor: pointer;
-            box-shadow: 0 3px 10px oklch(60% 0.04 280 / 0.08);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.18s ease, box-shadow 0.18s ease;
-        }
-
-        body.dark-mode .btn {
-            background: oklch(22% 0.02 260 / 0.65);
-            border-color: oklch(100% 0 0 / 0.08);
-        }
-
-        .btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 18px oklch(60% 0.04 280 / 0.12); }
-        .btn:active { transform: scale(0.94); }
-        .btn svg    { width: 22px; height: 22px; fill: currentColor; }
-
-        /* ── Responsive ───────────────────────────────────── */
-        @media (max-width: 640px) {
-            .bento-grid {
-                grid-template-columns: 1fr 1fr;
-                grid-template-areas:
-                    "gold   gold"
-                    "silver dollar"
-                    "status status";
-            }
-            .price-value { font-size: 1.7rem; }
-        }
-
-        @media (max-width: 380px) {
-            .bento-grid {
-                grid-template-columns: 1fr;
-                grid-template-areas:
-                    "gold"
-                    "silver"
-                
-                    "silver dollar"
-                    "status status";
-            }
-            .price-value { font-size: 1.7rem; }
-        }
-
-        @media (max-width: 380px) {
-            .bento-grid {
-                grid-template-columns: 1fr;
-                grid-template-areas:
-                    "gold"
-                    "silver"
-                important; }
-            .bento-card:hover { transform: none; }
-        }
-    </style>
+    @media (max-width: 980px){
+      .span-4,.span-6{grid-column: span 12}
+      .price{font-size:1.55rem}
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <header class="topbar">
+      <div class="brand">📊 نبض بازار</div>
+      <div class="actions">
+        <button class="btn" id="themeToggle">🌙 / ☀️ تم</button>
+        <button class="btn" id="refreshBtn">🔄 بارگذاری داده</button>
+      </div>
+    </header>
 
-<div class="dashboard-wrapper" id="capture-area">
-
-    <div class="header">
-        <h1>نبض بازار 🌸</h1>
-        <p class="header-sub" id="last-run">در حال دریافت اطلاعات... ⏳</p>
-    </div>
-
-    <div class="bento-grid">
-
-        <!-- کارت طلا 🌟 -->
-        <div class="bento-card card-gold">
-            <div class="price-title">🌟 طلای ۱۸ عیار (میلی‌گرم)</div>
-            <div class="price-value" id="gold-price" title="کلیک برای کپی">---</div>
-            <div class="price-meta" id="gold-meta"></div>
+    <main class="grid">
+      <section class="card gold span-4">
+        <div class="metric">
+          <div>
+            <div class="title">🟡 طلای ۱۸ عیار</div>
+            <div class="price" id="goldPrice">--</div>
+            <div class="unit">ریال / گرم</div>
+          </div>
+          <span class="badge" id="goldState">...</span>
         </div>
+        <div class="meta" id="goldMeta">در حال دریافت...</div>
+        <button class="copy-btn" data-copy="gold">📋 کپی قیمت</button>
+      </section>
 
-        <!-- کارت نقره 🩵 -->
-        <div class="bento-card card-silver">
-            <div class="price-title">🩵 نقره ۹۹۹</div>
-            <div class="price-value" id="silver-price" title="کلیک برای کپی">---</div>
-            <div class="price-meta" id="silver-meta"></div>
+      <section class="card silver span-4">
+        <div class="metric">
+          <div>
+            <div class="title">⚪ نقره ۹۹۹</div>
+            <div class="price" id="silverPrice">--</div>
+            <div class="unit">ریال / ۱ میلی‌گرم</div>
+          </div>
+          <span class="badge" id="silverState">...</span>
         </div>
+        <div class="meta" id="silverMeta">در حال دریافت...</div>
+        <button class="copy-btn" data-copy="silver">📋 کپی قیمت</button>
+      </section>
 
-        <!-- کارت دلار 💚 -->
-        <div class="bento-card card-dollar">
-            <div class="price-title">💚 دلار آمریکا (ریال)</div>
-            <div class="price-value" id="dollar-price" title="کلیک برای کپی">---</div>
-            <div class="price-meta" id="dollar-meta"></div>
+      <section class="card usd span-4">
+        <div class="metric">
+          <div>
+            <div class="title">💵 دلار آزاد</div>
+            <div class="price" id="usdPrice">--</div>
+            <div class="unit">ریال</div>
+          </div>
+          <span class="badge" id="usdState">...</span>
         </div>
+        <div class="meta" id="usdMeta">در حال دریافت...</div>
+        <button class="copy-btn" data-copy="usd">📋 کپی قیمت</button>
+      </section>
 
-        <!-- کارت وضعیت 🔄 -->
-        <div class="bento-card card-status">
-            <div class="status-title">🔄 آخرین اجرای ربات</div>
-            <div class="status-time" id="status-time">---</div>
-        </div>
+      <section class="card status span-12">
+        <div class="title">🧠 وضعیت همگام‌سازی</div>
+        <div class="meta" id="syncMeta">در حال آماده‌سازی...</div>
+      </section>
+    </main>
 
-    </div>
+    <footer class="social" aria-label="social-box">
+      <div class="icon" title="Instagram">
+        <svg viewBox="0 0 24 24"><path d="M7 2C4.2 2 2 4.2 2 7v10c0 2.8 2.2 5 5 5h10c2.8 0 5-2.2 5-5V7c0-2.8-2.2-5-5-5H7zm11 2a1 1 0 110 2 1 1 0 010-2zM12 7a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6z"/></svg>
+      </div>
+      <div class="icon" title="Telegram">
+        <svg viewBox="0 0 24 24"><path d="M21.9 4.6c.3-1.3-1-2.4-2.2-1.9L3.2 9c-1.4.5-1.3 2.5.1 2.9l3.9 1.1 1.4 4.7c.4 1.3 2 1.7 2.9.8l2.2-2.1 4.3 3.2c1 .8 2.5.2 2.8-1.1l1.1-13.9z"/></svg>
+      </div>
+      <div class="icon" title="X">
+        <svg viewBox="0 0 24 24"><path d="M3 3h4.6l4.1 5.8L16.8 3H21l-7.2 8.1L21.5 21h-4.6l-4.6-6.4L6.6 21H2.5l7.3-8.2L3 3z"/></svg>
+      </div>
+    </footer>
+  </div>
 
-    <div class="controls">
-        <button class="btn" onclick="toggleTheme()" title="تغییر تم">
-            <svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18zm0-2a7 7 0 1 0 0-14 7 7 0 0 0 0 14zm0-2.5A4.5 4.5 0 1 1 12 7.5v9z"/></svg>
-        </button>
-        <button class="btn" onclick="exportToPNG()" title="خروجی عکس">
-            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-        </button>
-        <button class="btn" onclick="fetchData()" title="به‌روزرسانی">
-            <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-        </button>
-    </div>
+  <div class="toast" id="toast">کپی شد ✅</div>
 
-</div>
+  <script>
+    const DATA_URL = "./data/prices.json";
+    const CACHE_KEY = "market_pulse_prices_v2";
+    const THEME_KEY = "market_pulse_theme";
 
-<script>
-    // ── Helpers ──────────────────────────────────────────────
-    const formatNumber = (num) => {
-        if (!num) return "نامشخص";
-        return new Intl.NumberFormat('fa-IR').format(num);
-    };
+    const fmtFa = new Intl.NumberFormat("fa-IR");
+    const fmtJalali = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+      dateStyle: "medium",
+      timeStyle: "medium",
+      timeZone: "Asia/Tehran"
+    });
 
-    const toPersianDate = (isoString) => {
-        if (!isoString) return null;
-        const date = new Date(isoString);
-        return new Intl.DateTimeFormat('fa-IR', {
-            calendar:  'persian',
-            timeZone:  'Asia/Tehran',
-            year:      'numeric',
-            month:     'long',
-            day:       'numeric',
-            hour:      '2-digit',
-            minute:    '2-digit'
-        }).format(date);
-    };
+    const $ = (id) => document.getElementById(id);
 
-    // ── UI Update ─────────────────────────────────────────────
-    const updateUI = (data) => {
-        // --- طلا ---
-        const goldEl   = document.getElementById('gold-price');
-        const goldMeta = document.getElementById('gold-meta');
-        const goldFresh = Boolean(data.gold_mg_rial && data.gold_last_success);
-        goldEl.textContent = formatNumber(data.gold_mg_rial);
-        goldEl.classList.toggle('stale', !goldFresh);
-        goldMeta.textContent = goldFresh
-            ? ''
-            : (data.gold_last_success ? '⚠️ آخرین قیمت ثبت‌شده: ' + toPersianDate(data.gold_last_success) : '⚠️ قیمتی ثبت نشده');
+    function showToast(msg="کپی شد ✅"){
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 1400);
+    }
 
-        // --- نقره ---
-        const silverEl   = document.getElementById('silver-price');
-        const silverMeta = document.getElementById('silver-meta');
-        const silverFresh = Boolean(data.silver_mg_rial && data.silver_last_success);
-        silverEl.textContent = formatNumber(data.silver_mg_rial);
-        silverEl.classList.toggle('stale', !silverFresh);
-        silverMeta.textContent = silverFresh
-            ? ''
-            : (data.silver_last_success ? '⚠️ آخرین قیمت ثبت‌شده: ' + toPersianDate(data.silver_last_success) : '⚠️ قیمتی ثبت نشده');
+    function copyText(text){
+      navigator.clipboard.writeText(String(text)).then(
+        ()=>showToast("قیمت کپی شد ✨"),
+        ()=>showToast("کپی نشد 😅")
+      );
+    }
 
-        // --- دلار ---
-        const dollarEl   = document.getElementById('dollar-price');
-        const dollarMeta = document.getElementById('dollar-meta');
-        const dollarFresh = Boolean(data.dollar_rial && data.dollar_last_success);
-        dollarEl.textContent = formatNumber(data.dollar_rial);
-        dollarEl.classList.toggle('stale', !dollarFresh);
-        dollarMeta.textContent = dollarFresh
-            ? ''
-            : (data.dollar_last_success ? '⚠️ آخرین قیمت ثبت‌شده: ' + toPersianDate(data.dollar_last_success) : '⚠️ قیمتی ثبت نشده');
+    function setTheme(theme){
+      if(theme === "deep-dark"){
+        document.documentElement.setAttribute("data-theme","deep-dark");
+      }else{
+        document.documentElement.removeAttribute("data-theme");
+      }
+      localStorage.setItem(THEME_KEY, theme);
+    }
 
-        // --- کارت وضعیت ---
-        const statusEl = document.getElementById('status-time');
-        const lastRun  = document.getElementById('last-run');
-        if (data.last_run_at) {
-            const t = toPersianDate(data.last_run_at);
-            statusEl.textContent = t;
-            lastRun.textContent  = '⏰ آخرین اجرای ربات: ' + t;
+    function loadTheme(){
+      const t = localStorage.getItem(THEME_KEY) || "light";
+      setTheme(t);
+    }
+
+    function isFresh(lastSuccessIso, lastRunIso){
+      // اگر last_success با last_run برابر باشد یعنی در همین ران مقدار تازه گرفته شده
+      return !!lastSuccessIso && !!lastRunIso && (lastSuccessIso === lastRunIso);
+    }
+
+    function isoToJalali(iso){
+      if(!iso) return "—";
+      const d = new Date(iso);
+      if(isNaN(d)) return "—";
+      return fmtJalali.format(d);
+    }
+
+    function setCard(key, value, lastSuccess, lastRun){
+      const priceEl = $(key+"Price");
+      const stateEl = $(key+"State");
+      const metaEl  = $(key+"Meta");
+
+      const hasValue = value !== null && value !== undefined && value !== "";
+      if(!hasValue){
+        priceEl.textContent = "--";
+        stateEl.textContent = "⚠️ بدون داده";
+        stateEl.classList.add("warn");
+        metaEl.textContent = "⚠️ قیمتی ثبت نشده است.";
+        return;
+      }
+
+      priceEl.textContent = fmtFa.format(Number(value));
+
+      const fresh = isFresh(lastSuccess, lastRun);
+      if(fresh){
+        stateEl.textContent = "✅ تازه";
+        stateEl.classList.remove("warn");
+        metaEl.textContent = `آخرین موفقیت: ${isoToJalali(lastSuccess)}`;
+      }else{
+        stateEl.textContent = "🕓 آرشیوی";
+        stateEl.classList.add("warn");
+        metaEl.textContent = `آخرین قیمت موفق (Fallback): ${isoToJalali(lastSuccess)}`;
+      }
+    }
+
+    function render(data){
+      setCard("gold", data.gold, data.gold_last_success, data.last_run_at);
+      setCard("silver", data.silver, data.silver_last_success, data.last_run_at);
+      setCard("usd", data.usd, data.usd_last_success, data.last_run_at);
+
+      $("syncMeta").textContent =
+        `آخرین اجرای ربات: ${isoToJalali(data.last_run_at)} | منبع: tgju.org | واحد: ریال`;
+
+      // bind copy
+      document.querySelectorAll(".copy-btn").forEach(btn=>{
+        btn.onclick = () => {
+          const key = btn.dataset.copy;
+          const val = data[key];
+          if(val === null || val === undefined){
+            showToast("داده‌ای برای کپی نیست 🙃");
+            return;
+          }
+          copyText(val);
+        };
+      });
+    }
+
+    async function loadData(){
+      // اول از cache برای UX سریع
+      const cached = localStorage.getItem(CACHE_KEY);
+      if(cached){
+        try{ render(JSON.parse(cached)); }catch(e){}
+      }
+
+      // بعد سعی در دریافت فایل جدید
+      try{
+        const res = await fetch(DATA_URL + "?t=" + Date.now(), {cache:"no-store"});
+        if(!res.ok) throw new Error("HTTP "+res.status);
+        const data = await res.json();
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        render(data);
+      }catch(err){
+        console.warn("fetch failed", err);
+        if(!cached){
+          $("syncMeta").textContent = "عدم دسترسی به داده و کش خالی است.";
+        }else{
+          showToast("شبکه ناموفق بود؛ داده کش نمایش داده شد");
         }
-    };
+      }
+    }
 
-    // ── Fetch ─────────────────────────────────────────────────
-    const fetchData = async () => {
-        try {
-            const response = await fetch(`./data/prices.json?t=${Date.now()}`);
-            const data = await response.json();
-            localStorage.setItem('market_pulse_data', JSON.stringify(data));
-            updateUI(data);
-        } catch (error) {
-            console.error("خطا در دریافت اطلاعات", error);
-            document.getElementById('last-run').textContent = "⚠️ خطا در اتصال! نمایش دیتای آفلاین...";
-            const cachedData = localStorage.getItem('market_pulse_data');
-            if (cachedData) updateUI(JSON.parse(cachedData));
-        }
-    };
+    $("themeToggle").addEventListener("click", ()=>{
+      const now = localStorage.getItem(THEME_KEY) || "light";
+      setTheme(now === "light" ? "deep-dark" : "light");
+    });
 
-    // ── Theme ─────────────────────────────────────────────────
-    const toggleTheme = () => {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem('market_pulse_theme', isDark ? 'dark' : 'light');
-    };
+    $("refreshBtn").addEventListener("click", loadData);
 
-    // ── Init ──────────────────────────────────────────────────
-    window.onload = () => {
-        if (localStorage.getItem('market_pulse_theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-        }
-        const cachedData = localStorage.getItem('market_pulse_data');
-        if (cachedData) updateUI(JSON.parse(cachedData));
-        fetchData();
-    };
-
-    // ── Export ────────────────────────────────────────────────
-    const exportToPNG = () => {
-        const wrap = document.getElementById('capture-area');
-        document.body.classList.add('exporting');
-        html2canvas(wrap, {
-            backgroundColor: document.body.classList.contains('dark-mode') ? '#161b2e' : '#faf0f6',
-            scale: 2
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = 'Nabz_Bazaar_2026.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            document.body.classList.remove('exporting');
-        });
-    };
-</script>
+    loadTheme();
+    loadData();
+  </script>
 </body>
+</html>
